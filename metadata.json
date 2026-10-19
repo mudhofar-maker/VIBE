@@ -1,0 +1,8 @@
+{
+  "name": "Remix VibeStream",
+  "description": "Create, share, and discover engaging short-form videos with a global community of creators.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

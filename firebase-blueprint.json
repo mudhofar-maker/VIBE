@@ -1,0 +1,114 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "User account profile details including bio and stats",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "The UID of the user" },
+        "username": { "type": "string", "description": "Unique username handle" },
+        "displayName": { "type": "string", "description": "Display name of the user" },
+        "bio": { "type": "string", "description": "Profile biography" },
+        "avatarUrl": { "type": "string", "description": "URL of user avatar" },
+        "followingCount": { "type": "integer", "description": "Number of creators followed" },
+        "followersCount": { "type": "integer", "description": "Number of followers" },
+        "likesReceivedCount": { "type": "integer", "description": "Total likes received" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Creation timestamp. Must be FieldValue.serverTimestamp()" },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Update timestamp. Must be FieldValue.serverTimestamp()" }
+      },
+      "required": ["userId", "username", "displayName", "createdAt"]
+    },
+    "Video": {
+      "title": "Video",
+      "description": "Short-form video posted by the user",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "The UID of the video creator" },
+        "videoUrl": { "type": "string", "description": "Playback URL of the video" },
+        "thumbnailUrl": { "type": "string", "description": "Thumbnail preview image URL" },
+        "creatorUsername": { "type": "string", "description": "Username handle of the creator" },
+        "creatorName": { "type": "string", "description": "Display name of the creator" },
+        "creatorAvatar": { "type": "string", "description": "Avatar URL of the creator" },
+        "caption": { "type": "string", "description": "Video caption description" },
+        "tags": { "type": "array", "description": "Hashtags associated with the video" },
+        "soundTitle": { "type": "string", "description": "Soundtrack track title" },
+        "soundAuthor": { "type": "string", "description": "Artist or author of the sound" },
+        "soundCoverUrl": { "type": "string", "description": "Sound cover artwork URL" },
+        "category": { "type": "string", "description": "Video category" },
+        "likesCount": { "type": "integer", "description": "Total number of likes" },
+        "commentsCount": { "type": "integer", "description": "Total number of comments" },
+        "bookmarksCount": { "type": "integer", "description": "Total number of bookmarks" },
+        "sharesCount": { "type": "integer", "description": "Total number of shares" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Creation timestamp. Must be FieldValue.serverTimestamp()" },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Update timestamp. Must be FieldValue.serverTimestamp()" }
+      },
+      "required": ["userId", "videoUrl", "thumbnailUrl", "creatorUsername", "caption", "createdAt"]
+    },
+    "Interaction": {
+      "title": "Interaction",
+      "description": "User interaction status on a specific video (like, bookmark, share)",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "The UID of the interacting user" },
+        "videoId": { "type": "string", "description": "Target video ID" },
+        "isLiked": { "type": "boolean", "description": "Whether the user liked this video" },
+        "isBookmarked": { "type": "boolean", "description": "Whether the user bookmarked this video" },
+        "isShared": { "type": "boolean", "description": "Whether the user shared this video" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Creation timestamp. Must be FieldValue.serverTimestamp()" },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Update timestamp. Must be FieldValue.serverTimestamp()" }
+      },
+      "required": ["userId", "videoId", "isLiked", "isBookmarked", "isShared", "createdAt"]
+    },
+    "Comment": {
+      "title": "Comment",
+      "description": "User comment on a video",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "The UID of the commenter" },
+        "videoId": { "type": "string", "description": "Target video ID" },
+        "username": { "type": "string", "description": "Username of the commenter" },
+        "userAvatar": { "type": "string", "description": "Avatar of the commenter" },
+        "commentText": { "type": "string", "description": "Comment message text" },
+        "likesCount": { "type": "integer", "description": "Number of likes on comment" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Creation timestamp. Must be FieldValue.serverTimestamp()" },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Update timestamp. Must be FieldValue.serverTimestamp()" }
+      },
+      "required": ["userId", "videoId", "username", "commentText", "createdAt"]
+    },
+    "Following": {
+      "title": "Following",
+      "description": "Creator followed by the user",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "The UID of the follower" },
+        "creatorUsername": { "type": "string", "description": "Username of the followed creator" },
+        "creatorName": { "type": "string", "description": "Display name of the followed creator" },
+        "creatorAvatar": { "type": "string", "description": "Avatar of the followed creator" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Timestamp when followed. Must be FieldValue.serverTimestamp()" }
+      },
+      "required": ["userId", "creatorUsername", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "User profile document containing account info and settings"
+    },
+    "/users/{userId}/videos/{videoId}": {
+      "schema": "Video",
+      "description": "Collection of videos created and uploaded by the user"
+    },
+    "/users/{userId}/interactions/{interactionId}": {
+      "schema": "Interaction",
+      "description": "Collection of user interactions (likes, bookmarks, shares) per video"
+    },
+    "/users/{userId}/comments/{commentId}": {
+      "schema": "Comment",
+      "description": "Collection of comments authored by the user"
+    },
+    "/users/{userId}/following/{followingId}": {
+      "schema": "Following",
+      "description": "Collection of creators followed by the user"
+    }
+  }
+}
