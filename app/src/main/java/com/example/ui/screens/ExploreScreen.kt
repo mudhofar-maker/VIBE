@@ -25,11 +25,11 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.TrendingUp
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.TrendingUp
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
@@ -168,7 +168,7 @@ fun ExploreScreen(
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(
-                                imageVector = Icons.Default.TrendingUp,
+                                imageVector = Icons.AutoMirrored.Filled.TrendingUp,
                                 contentDescription = null,
                                 tint = TikTokRed,
                                 modifier = Modifier.size(18.dp)
@@ -324,10 +324,27 @@ private fun ExploreVideoCard(
                 )
                 Spacer(modifier = Modifier.width(2.dp))
                 Text(
-                    text = video.formattedLikes(),
+                    text = if (video.isLongVideo) video.formattedViews() else video.formattedLikes(),
                     color = Color.White,
                     fontSize = 11.sp,
                     fontWeight = FontWeight.SemiBold
+                )
+            }
+
+            // Duration badge for long videos or short indicator
+            Box(
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(6.dp)
+                    .clip(RoundedCornerShape(4.dp))
+                    .background(Color.Black.copy(alpha = 0.8f))
+                    .padding(horizontal = 4.dp, vertical = 2.dp)
+            ) {
+                Text(
+                    text = video.durationFormatted,
+                    color = if (video.isLongVideo) TikTokCyan else Color.White,
+                    fontSize = 10.sp,
+                    fontWeight = FontWeight.Bold
                 )
             }
         }

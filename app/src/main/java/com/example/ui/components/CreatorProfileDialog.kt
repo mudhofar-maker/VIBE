@@ -46,12 +46,15 @@ import com.example.ui.theme.TextPrimary
 import com.example.ui.theme.TextSecondary
 import com.example.ui.theme.TikTokCyan
 import com.example.ui.theme.TikTokRed
+import com.example.ui.theme.TikTokYellow
 
 @Composable
 fun CreatorProfileDialog(
     video: VideoItem,
     onDismiss: () -> Unit,
-    onToggleFollow: () -> Unit
+    onToggleFollow: () -> Unit,
+    onDanaSawerClick: (VideoItem) -> Unit = {},
+    onGiftClick: (VideoItem) -> Unit = {}
 ) {
     Dialog(onDismissRequest = onDismiss) {
         Surface(
@@ -158,7 +161,7 @@ fun CreatorProfileDialog(
                         shape = RoundedCornerShape(12.dp),
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(46.dp)
+                            .height(44.dp)
                             .testTag("following_button")
                     ) {
                         Icon(
@@ -177,10 +180,48 @@ fun CreatorProfileDialog(
                         shape = RoundedCornerShape(12.dp),
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(46.dp)
+                            .height(44.dp)
                             .testTag("follow_creator_button")
                     ) {
                         Text("Ikuti", color = Color.White, fontWeight = FontWeight.Bold)
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(10.dp))
+
+                // P2P DANA & Gift Action Row
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    Button(
+                        onClick = {
+                            onDismiss()
+                            onDanaSawerClick(video)
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF118EEA)),
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(44.dp)
+                            .testTag("creator_dana_sawer_button")
+                    ) {
+                        Text("⚡ Sawer DANA", color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    }
+
+                    Button(
+                        onClick = {
+                            onDismiss()
+                            onGiftClick(video)
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = DarkSurfaceElevated),
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(44.dp)
+                            .testTag("creator_gift_button")
+                    ) {
+                        Text("🎁 Kirim Gift", color = TikTokYellow, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                     }
                 }
             }

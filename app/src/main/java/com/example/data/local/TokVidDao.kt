@@ -37,4 +37,34 @@ interface TokVidDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertCreatedVideo(video: CreatedVideoEntity)
+
+    // User DANA Profile
+    @Query("SELECT * FROM user_dana_profile WHERE id = 'primary_user_dana' LIMIT 1")
+    fun getUserDanaProfile(): Flow<UserDanaProfileEntity?>
+
+    @Query("SELECT * FROM user_dana_profile WHERE id = 'primary_user_dana' LIMIT 1")
+    suspend fun getUserDanaProfileSync(): UserDanaProfileEntity?
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun upsertUserDanaProfile(profile: UserDanaProfileEntity)
+
+    // User Coin Wallet
+    @Query("SELECT * FROM user_coin_wallet WHERE id = 'primary_coin_wallet' LIMIT 1")
+    fun getUserCoinWallet(): Flow<UserCoinWalletEntity?>
+
+    @Query("SELECT * FROM user_coin_wallet WHERE id = 'primary_coin_wallet' LIMIT 1")
+    suspend fun getUserCoinWalletSync(): UserCoinWalletEntity?
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun upsertUserCoinWallet(wallet: UserCoinWalletEntity)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun upsertCoinWallet(wallet: UserCoinWalletEntity)
+
+    // Coin Transactions History
+    @Query("SELECT * FROM coin_transactions ORDER BY timestamp DESC")
+    fun getAllCoinTransactions(): Flow<List<CoinTransactionEntity>>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertCoinTransaction(transaction: CoinTransactionEntity)
 }

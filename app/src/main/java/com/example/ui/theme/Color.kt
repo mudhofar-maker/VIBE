@@ -18,3 +18,5 @@ val TextMuted = Color(0xFF6B6B74)
 
 val OverlayDark = Color(0x99000000)
 val LiveRed = Color(0xFFFF004F)
+val DarkCard = Color(0xFF1A1A22)
+val DanaBlue = Color(0xFF118EEA)

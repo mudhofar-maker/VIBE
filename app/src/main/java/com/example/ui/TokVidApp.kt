@@ -20,10 +20,12 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Bolt
 import androidx.compose.material.icons.filled.ChatBubble
 import androidx.compose.material.icons.filled.Explore
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.outlined.Bolt
 import androidx.compose.material.icons.outlined.ChatBubbleOutline
 import androidx.compose.material.icons.outlined.Explore
 import androidx.compose.material.icons.outlined.Home
@@ -35,6 +37,9 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -48,15 +53,25 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.data.model.VideoItem
+import com.example.ui.components.BureaucracyFreePolicyDialog
 import com.example.ui.components.CommentsBottomSheet
+import com.example.ui.components.CreateContentBottomSheet
 import com.example.ui.components.CreatorProfileDialog
+import com.example.ui.components.DanaProfileEtalaseDialog
+import com.example.ui.components.DanaSawerP2PDialog
+import com.example.ui.components.GiftBurstOverlay
 import com.example.ui.components.ShareBottomSheet
 import com.example.ui.components.SoundDetailDialog
+import com.example.ui.components.UploadVideoDialog
+import com.example.ui.components.VibeCoinWalletDialog
+import com.example.ui.components.VibeGiftBottomSheet
 import com.example.ui.screens.CreateScreen
 import com.example.ui.screens.ExploreScreen
 import com.example.ui.screens.HomeScreen
 import com.example.ui.screens.InboxScreen
+import com.example.ui.screens.LongVideoWatchScreen
 import com.example.ui.screens.ProfileScreen
+import com.example.ui.screens.ShortsScreen
 import com.example.ui.theme.DarkBackground
 import com.example.ui.theme.DarkBorder
 import com.example.ui.theme.LiveRed
@@ -78,6 +93,7 @@ fun TokVidApp(viewModel: MainViewModel) {
     val allVideos by viewModel.allVideos.collectAsStateWithLifecycle()
     val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
     val selectedCategory by viewModel.selectedCategory.collectAsStateWithLifecycle()
+    val selectedWatchVideo by viewModel.selectedWatchVideo.collectAsStateWithLifecycle()
 
     val commentsVideo by viewModel.selectedVideoForComments.collectAsStateWithLifecycle()
     val shareVideo by viewModel.selectedVideoForShare.collectAsStateWithLifecycle()
@@ -85,12 +101,32 @@ fun TokVidApp(viewModel: MainViewModel) {
     val creatorVideo by viewModel.selectedCreator.collectAsStateWithLifecycle()
     val currentComments by viewModel.activeComments.collectAsStateWithLifecycle()
 
+    // P2P DANA & Coin States
+    val userDanaProfile by viewModel.userDanaProfile.collectAsStateWithLifecycle()
+    val userCoins by viewModel.userCoinBalance.collectAsStateWithLifecycle()
+    val coinTransactions by viewModel.coinTransactions.collectAsStateWithLifecycle()
+    val danaSawerVideo by viewModel.selectedVideoForDanaSawer.collectAsStateWithLifecycle()
+    val giftVideo by viewModel.selectedVideoForGift.collectAsStateWithLifecycle()
+    val isWalletOpen by viewModel.isWalletDialogOpen.collectAsStateWithLifecycle()
+    val isDanaProfileOpen by viewModel.isDanaProfileDialogOpen.collectAsStateWithLifecycle()
+    val isPolicyOpen by viewModel.isPolicyDialogOpen.collectAsStateWithLifecycle()
+    val activeGiftAnimation by viewModel.activeGiftAnimation.collectAsStateWithLifecycle()
+
     val commentsSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val shareSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val giftSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
+    var showCreateOptionsSheet by remember { mutableStateOf(false) }
+    var showUploadDialog by remember { mutableStateOf(false) }
+    var uploadInitialIsLongVideo by remember { mutableStateOf(false) }
 
     // Handle back button for sub-screens
     BackHandler(enabled = currentTab != NavigationTab.HOME) {
-        viewModel.setNavTab(NavigationTab.HOME)
+        if (currentTab == NavigationTab.WATCH) {
+            viewModel.closeWatchVideo()
+        } else {
+            viewModel.setNavTab(NavigationTab.HOME)
+        }
     }
 
     Box(
@@ -98,16 +134,27 @@ fun TokVidApp(viewModel: MainViewModel) {
             .fillMaxSize()
             .background(Color.Black)
     ) {
-        // Main Screens - HomeScreen runs completely full-screen edge-to-edge
+        // Main Screens Router
         when (currentTab) {
             NavigationTab.HOME -> {
                 HomeScreen(
+                    videos = allVideos,
+                    onOpenWatchVideo = { video -> viewModel.openWatchVideo(video) },
+                    onOpenShorts = { video -> viewModel.openShorts(video) },
+                    onSearchClick = { viewModel.setNavTab(NavigationTab.DISCOVER) },
+                    onNotificationClick = { viewModel.setNavTab(NavigationTab.INBOX) },
+                    onProfileClick = { viewModel.setNavTab(NavigationTab.PROFILE) }
+                )
+            }
+
+            NavigationTab.SHORTS -> {
+                ShortsScreen(
                     videos = feedVideos,
                     activeFeedTab = feedTab,
                     onTabSelected = { viewModel.setFeedTab(it) },
                     onSearchClick = { viewModel.setNavTab(NavigationTab.DISCOVER) },
                     onLiveClick = {
-                        Toast.makeText(context, "Menghubungkan ke siaran langsung MyFlix...", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, "Menghubungkan ke siaran langsung VibeStream...", Toast.LENGTH_SHORT).show()
                     },
                     onLikeClick = { viewModel.toggleLike(it) },
                     onBookmarkClick = { viewModel.toggleBookmark(it) },
@@ -115,8 +162,30 @@ fun TokVidApp(viewModel: MainViewModel) {
                     onShareClick = { viewModel.openShare(it) },
                     onSoundClick = { viewModel.openSound(it) },
                     onCreatorClick = { viewModel.openCreatorProfile(it) },
-                    onFollowClick = { username, status -> viewModel.toggleFollow(username, status) }
+                    onFollowClick = { username, status -> viewModel.toggleFollow(username, status) },
+                    onDanaSawerClick = { viewModel.openDanaSawer(it) },
+                    onGiftClick = { viewModel.openGiftSheet(it) }
                 )
+            }
+
+            NavigationTab.WATCH -> {
+                if (selectedWatchVideo != null) {
+                    LongVideoWatchScreen(
+                        video = selectedWatchVideo!!,
+                        relatedVideos = allVideos.filter { it.isLongVideo },
+                        comments = currentComments,
+                        onBackClick = { viewModel.closeWatchVideo() },
+                        onVideoSelected = { video -> viewModel.openWatchVideo(video) },
+                        onLikeClick = { viewModel.toggleLike(it) },
+                        onBookmarkClick = { viewModel.toggleBookmark(it) },
+                        onShareClick = { viewModel.openShare(it) },
+                        onAddComment = { text -> viewModel.addComment(selectedWatchVideo!!.id, text) },
+                        onDanaSawerClick = { viewModel.openDanaSawer(it) },
+                        onGiftClick = { viewModel.openGiftSheet(it) }
+                    )
+                } else {
+                    viewModel.setNavTab(NavigationTab.HOME)
+                }
             }
 
             NavigationTab.DISCOVER -> {
@@ -132,8 +201,11 @@ fun TokVidApp(viewModel: MainViewModel) {
                         selectedCategory = selectedCategory,
                         onCategoryChange = { viewModel.setSelectedCategory(it) },
                         onVideoSelected = { video ->
-                            viewModel.setNavTab(NavigationTab.HOME)
-                            viewModel.setFeedTab(FeedTab.FOR_YOU)
+                            if (video.isLongVideo) {
+                                viewModel.openWatchVideo(video)
+                            } else {
+                                viewModel.openShorts(video)
+                            }
                         }
                     )
                 }
@@ -142,9 +214,10 @@ fun TokVidApp(viewModel: MainViewModel) {
             NavigationTab.CREATE -> {
                 CreateScreen(
                     onClose = { viewModel.setNavTab(NavigationTab.HOME) },
-                    onPublishVideo = { caption, tags, sound, category ->
-                        viewModel.createVideo(caption, tags, sound, category)
-                        Toast.makeText(context, "Video berhasil dipublikasikan!", Toast.LENGTH_LONG).show()
+                    onPublishVideo = { caption, tags, sound, category, isLongVideo, durationFormatted ->
+                        viewModel.createVideo(caption, tags, sound, category, isLongVideo, durationFormatted)
+                        val msg = if (isLongVideo) "Video Panjang berhasil dipublikasikan!" else "Short berhasil dipublikasikan!"
+                        Toast.makeText(context, msg, Toast.LENGTH_LONG).show()
                     }
                 )
             }
@@ -167,25 +240,76 @@ fun TokVidApp(viewModel: MainViewModel) {
                 ) {
                     ProfileScreen(
                         videos = allVideos,
-                        onVideoClick = {
-                            viewModel.setNavTab(NavigationTab.HOME)
-                        }
+                        userDanaProfile = userDanaProfile,
+                        userCoins = userCoins,
+                        onVideoClick = { video ->
+                            if (video.isLongVideo) {
+                                viewModel.openWatchVideo(video)
+                            } else {
+                                viewModel.openShorts(video)
+                            }
+                        },
+                        onOpenDanaEtalase = { viewModel.openDanaProfileDialog() },
+                        onOpenWallet = { viewModel.openWalletDialog() },
+                        onOpenPolicy = { viewModel.openPolicyDialog() }
                     )
                 }
             }
         }
 
-        // Floating Bottom Navigation Bar overlaid smoothly
-        if (currentTab != NavigationTab.CREATE) {
+        // Floating Bottom Navigation Bar (Hidden during full-screen player or recording)
+        if (currentTab != NavigationTab.CREATE && currentTab != NavigationTab.WATCH) {
             TokVidBottomNavBar(
                 currentTab = currentTab,
                 onTabSelected = { viewModel.setNavTab(it) },
+                onCreateClick = { showCreateOptionsSheet = true },
                 modifier = Modifier.align(Alignment.BottomCenter)
             )
         }
 
-        // Comments Bottom Sheet
-        if (commentsVideo != null) {
+        // Create Options Bottom Sheet (Triggered by the (+) Button)
+        if (showCreateOptionsSheet) {
+            CreateContentBottomSheet(
+                onDismiss = { showCreateOptionsSheet = false },
+                onUploadVideoClick = {
+                    uploadInitialIsLongVideo = false
+                    showUploadDialog = true
+                },
+                onRecordShortsClick = {
+                    viewModel.setNavTab(NavigationTab.CREATE)
+                },
+                onUploadLongVideoClick = {
+                    uploadInitialIsLongVideo = true
+                    showUploadDialog = true
+                },
+                onGoLiveClick = {
+                    Toast.makeText(context, "Menghubungkan ke Studio Siaran Langsung VibeStream...", Toast.LENGTH_SHORT).show()
+                }
+            )
+        }
+
+        // Upload Video Dialog
+        if (showUploadDialog) {
+            UploadVideoDialog(
+                initialIsLongVideo = uploadInitialIsLongVideo,
+                onDismiss = { showUploadDialog = false },
+                onPublish = { caption, tags, soundTitle, category, isLongVideo, durationFormatted, videoUrl, thumbnailUrl ->
+                    viewModel.createVideo(
+                        caption = caption,
+                        tags = tags,
+                        soundTitle = soundTitle,
+                        category = category,
+                        isLongVideo = isLongVideo,
+                        durationFormatted = durationFormatted,
+                        videoUrl = videoUrl,
+                        thumbnailUrl = thumbnailUrl
+                    )
+                }
+            )
+        }
+
+        // Comments Bottom Sheet (for Shorts)
+        if (commentsVideo != null && currentTab == NavigationTab.SHORTS) {
             CommentsBottomSheet(
                 sheetState = commentsSheetState,
                 comments = currentComments,
@@ -199,7 +323,7 @@ fun TokVidApp(viewModel: MainViewModel) {
         }
 
         // Share Bottom Sheet
-        if (shareVideo != null) {
+        if (shareVideo != null && currentTab != NavigationTab.WATCH) {
             ShareBottomSheet(
                 sheetState = shareSheetState,
                 video = shareVideo!!,
@@ -226,9 +350,84 @@ fun TokVidApp(viewModel: MainViewModel) {
                 onDismiss = { viewModel.closeCreatorProfile() },
                 onToggleFollow = {
                     viewModel.toggleFollow(creatorVideo!!.creatorUsername, creatorVideo!!.isFollowing)
-                }
+                },
+                onDanaSawerClick = { viewModel.openDanaSawer(it) },
+                onGiftClick = { viewModel.openGiftSheet(it) }
             )
         }
+
+        // P2P DANA Sawer Dialog (Direct Barcode Scan & Transfer)
+        if (danaSawerVideo != null) {
+            DanaSawerP2PDialog(
+                video = danaSawerVideo!!,
+                onConfirmSent = { nominal ->
+                    viewModel.confirmP2PDanaSent(danaSawerVideo!!.creatorName, nominal)
+                    viewModel.closeDanaSawer()
+                },
+                onDismiss = { viewModel.closeDanaSawer() }
+            )
+        }
+
+        // Internal VibeGift Bottom Sheet
+        if (giftVideo != null) {
+            VibeGiftBottomSheet(
+                sheetState = giftSheetState,
+                video = giftVideo!!,
+                userCoinBalance = userCoins,
+                onSendGift = { gift ->
+                    viewModel.sendGift(giftVideo!!, gift)
+                },
+                onOpenWallet = {
+                    viewModel.closeGiftSheet()
+                    viewModel.openWalletDialog()
+                },
+                onDismiss = { viewModel.closeGiftSheet() }
+            )
+        }
+
+        // Dompet Koin Mandiri Dialog
+        if (isWalletOpen) {
+            VibeCoinWalletDialog(
+                currentCoins = userCoins,
+                transactions = coinTransactions,
+                onRechargeCoins = { amount, label -> viewModel.rechargeCoins(amount, label) },
+                onClaimDailyReward = { viewModel.claimDailyReward() },
+                onRedeemVoucher = { code ->
+                    var success = false
+                    viewModel.redeemVoucher(code) { success = it }
+                    success
+                },
+                onOpenPolicy = {
+                    viewModel.closeWalletDialog()
+                    viewModel.openPolicyDialog()
+                },
+                onDismiss = { viewModel.closeWalletDialog() }
+            )
+        }
+
+        // Personal DANA QR Profile Showcase Dialog
+        if (isDanaProfileOpen) {
+            DanaProfileEtalaseDialog(
+                initialProfile = userDanaProfile,
+                onSaveProfile = { phone, name, qrUrl, notes, active ->
+                    viewModel.saveUserDanaProfile(phone, name, qrUrl, notes, active)
+                },
+                onDismiss = { viewModel.closeDanaProfileDialog() }
+            )
+        }
+
+        // Bureaucracy Free Policy Dialog
+        if (isPolicyOpen) {
+            BureaucracyFreePolicyDialog(
+                onDismiss = { viewModel.closePolicyDialog() }
+            )
+        }
+
+        // Fullscreen Floating Gift Burst Celebration Overlay
+        GiftBurstOverlay(
+            animation = activeGiftAnimation,
+            onFinished = { viewModel.clearGiftAnimation() }
+        )
     }
 }
 
@@ -236,9 +435,10 @@ fun TokVidApp(viewModel: MainViewModel) {
 fun TokVidBottomNavBar(
     currentTab: NavigationTab,
     onTabSelected: (NavigationTab) -> Unit,
+    onCreateClick: () -> Unit = { onTabSelected(NavigationTab.CREATE) },
     modifier: Modifier = Modifier
 ) {
-    val navBackgroundModifier = if (currentTab == NavigationTab.HOME) {
+    val navBackgroundModifier = if (currentTab == NavigationTab.SHORTS) {
         Modifier.background(
             Brush.verticalGradient(
                 colors = listOf(
@@ -258,7 +458,7 @@ fun TokVidBottomNavBar(
             .then(navBackgroundModifier)
             .navigationBarsPadding()
     ) {
-        if (currentTab != NavigationTab.HOME) {
+        if (currentTab != NavigationTab.SHORTS) {
             HorizontalDivider(color = DarkBorder, thickness = 0.5.dp)
         }
 
@@ -270,7 +470,7 @@ fun TokVidBottomNavBar(
             horizontalArrangement = Arrangement.SpaceAround,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Home
+            // Home / Beranda
             NavIconItem(
                 label = "Beranda",
                 selectedIcon = Icons.Filled.Home,
@@ -280,19 +480,19 @@ fun TokVidBottomNavBar(
                 testTag = "nav_home"
             )
 
-            // Discover
+            // Shorts
             NavIconItem(
-                label = "Teman",
-                selectedIcon = Icons.Filled.Explore,
-                unselectedIcon = Icons.Outlined.Explore,
-                isSelected = currentTab == NavigationTab.DISCOVER,
-                onClick = { onTabSelected(NavigationTab.DISCOVER) },
-                testTag = "nav_discover"
+                label = "Shorts",
+                selectedIcon = Icons.Filled.Bolt,
+                unselectedIcon = Icons.Outlined.Bolt,
+                isSelected = currentTab == NavigationTab.SHORTS,
+                onClick = { onTabSelected(NavigationTab.SHORTS) },
+                testTag = "nav_shorts"
             )
 
             // Central TikTok Plus Button
             TikTokPlusCreateButton(
-                onClick = { onTabSelected(NavigationTab.CREATE) }
+                onClick = onCreateClick
             )
 
             // Inbox with red notification badge
@@ -329,78 +529,90 @@ private fun NavIconItem(
     showBadge: Boolean = false,
     testTag: String
 ) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center,
+    Box(
         modifier = Modifier
             .clickable(onClick = onClick)
-            .padding(horizontal = 12.dp, vertical = 4.dp)
-            .testTag(testTag)
+            .padding(horizontal = 6.dp, vertical = 4.dp)
+            .testTag(testTag),
+        contentAlignment = Alignment.Center
     ) {
-        Box(contentAlignment = Alignment.TopEnd) {
-            Icon(
-                imageVector = if (isSelected) selectedIcon else unselectedIcon,
-                contentDescription = label,
-                tint = if (isSelected) Color.White else TextMuted,
-                modifier = Modifier.size(24.dp)
-            )
-            if (showBadge) {
-                Box(
-                    modifier = Modifier
-                        .offset(x = 4.dp, y = (-2).dp)
-                        .size(8.dp)
-                        .clip(CircleShape)
-                        .background(LiveRed)
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Box {
+                Icon(
+                    imageVector = if (isSelected) selectedIcon else unselectedIcon,
+                    contentDescription = label,
+                    tint = if (isSelected) TextPrimary else TextMuted,
+                    modifier = Modifier.size(24.dp)
                 )
+
+                // Optional Red Dot Badge
+                if (showBadge) {
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .offset(x = 3.dp, y = (-2).dp)
+                            .size(7.dp)
+                            .background(LiveRed, CircleShape)
+                    )
+                }
             }
+
+            Spacer(modifier = Modifier.height(2.dp))
+
+            Text(
+                text = label,
+                color = if (isSelected) TextPrimary else TextMuted,
+                fontSize = 10.sp,
+                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+            )
         }
-        Spacer(modifier = Modifier.height(2.dp))
-        Text(
-            text = label,
-            fontSize = 10.sp,
-            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-            color = if (isSelected) Color.White else TextMuted
-        )
     }
 }
 
 @Composable
 private fun TikTokPlusCreateButton(
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     Box(
-        modifier = Modifier
+        modifier = modifier
+            .size(width = 54.dp, height = 48.dp)
             .clickable(onClick = onClick)
-            .padding(horizontal = 4.dp)
             .testTag("nav_create_button"),
         contentAlignment = Alignment.Center
     ) {
-        // Cyan and Pink background layer shadows
+        // Left Cyan Underlay
         Box(
             modifier = Modifier
-                .size(width = 44.dp, height = 30.dp)
                 .offset(x = (-3).dp)
+                .size(width = 38.dp, height = 28.dp)
                 .clip(RoundedCornerShape(8.dp))
                 .background(TikTokCyan)
         )
+
+        // Right Red Underlay
         Box(
             modifier = Modifier
-                .size(width = 44.dp, height = 30.dp)
                 .offset(x = 3.dp)
+                .size(width = 38.dp, height = 28.dp)
                 .clip(RoundedCornerShape(8.dp))
                 .background(TikTokRed)
         )
-        // White center pill with black plus icon
+
+        // Center White Foreground
         Box(
             modifier = Modifier
-                .size(width = 40.dp, height = 30.dp)
+                .size(width = 38.dp, height = 28.dp)
                 .clip(RoundedCornerShape(8.dp))
                 .background(Color.White),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 imageVector = Icons.Default.Add,
-                contentDescription = "Buat Video",
+                contentDescription = "Buat Konten Baru atau Upload Video",
                 tint = Color.Black,
                 modifier = Modifier.size(20.dp)
             )

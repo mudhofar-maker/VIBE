@@ -37,5 +37,36 @@ data class CreatedVideoEntity(
     val tags: String,
     val soundTitle: String,
     val category: String,
+    val isLongVideo: Boolean = false,
+    val durationFormatted: String = "10:30",
     val createdAt: Long = System.currentTimeMillis()
+)
+
+@Entity(tableName = "user_dana_profile")
+data class UserDanaProfileEntity(
+    @PrimaryKey val id: String = "primary_user_dana",
+    val danaPhoneNumber: String = "0812-9876-5432",
+    val danaAccountName: String = "ALDI PRASETYA",
+    val qrCustomImageUrl: String? = null,
+    val notes: String = "Saweran langsung P2P ke akun DANA saya tanpa potongan admin aplikasi!",
+    val isDanaActive: Boolean = true,
+    val totalDirectSawerCount: Long = 14L
+)
+
+@Entity(tableName = "user_coin_wallet")
+data class UserCoinWalletEntity(
+    @PrimaryKey val id: String = "primary_coin_wallet",
+    val balance: Long = 350L,
+    val lastCheckInDate: String = ""
+)
+
+@Entity(tableName = "coin_transactions")
+data class CoinTransactionEntity(
+    @PrimaryKey val id: String,
+    val title: String,
+    val amount: Long,
+    val isEarned: Boolean,
+    val timestamp: Long = System.currentTimeMillis(),
+    val description: String,
+    val iconEmoji: String = "🪙"
 )

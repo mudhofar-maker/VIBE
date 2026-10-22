@@ -23,6 +23,7 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Bolt
 import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.GridView
@@ -30,6 +31,11 @@ import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.PersonAdd
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Verified
+import androidx.compose.material.icons.filled.VideoLibrary
+import androidx.compose.material.icons.filled.AccountBalanceWallet
+import androidx.compose.material.icons.filled.Policy
+import androidx.compose.material.icons.filled.QrCode2
+import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
@@ -57,7 +63,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
+import com.example.data.model.UserDanaProfile
 import com.example.data.model.VideoItem
+import com.example.ui.components.DanaBlue
 import com.example.ui.theme.DarkBackground
 import com.example.ui.theme.DarkBorder
 import com.example.ui.theme.DarkSurface
@@ -72,20 +80,31 @@ import com.example.ui.theme.TikTokYellow
 @Composable
 fun ProfileScreen(
     videos: List<VideoItem>,
-    onVideoClick: (VideoItem) -> Unit
+    userDanaProfile: UserDanaProfile? = null,
+    userCoins: Long = 500L,
+    onVideoClick: (VideoItem) -> Unit,
+    onOpenDanaEtalase: () -> Unit = {},
+    onOpenWallet: () -> Unit = {},
+    onOpenPolicy: () -> Unit = {}
 ) {
     val context = LocalContext.current
     var selectedTabIndex by remember { mutableIntStateOf(0) }
-    val tabTitles = listOf("Video", "Disukai", "Disimpan")
+    val tabTitles = listOf("Semua", "Shorts", "Panjang", "Disukai")
 
     val userVideos = videos.filter { it.isUserCreated }
     val likedVideos = videos.filter { it.isLiked }
-    val bookmarkedVideos = videos.filter { it.isBookmarked }
 
     val currentTabVideos = when (selectedTabIndex) {
-        0 -> if (userVideos.isNotEmpty()) userVideos else videos.take(3)
-        1 -> if (likedVideos.isNotEmpty()) likedVideos else emptyList()
-        else -> if (bookmarkedVideos.isNotEmpty()) bookmarkedVideos else emptyList()
+        0 -> if (userVideos.isNotEmpty()) userVideos else videos.take(6)
+        1 -> {
+            val s = userVideos.filter { !it.isLongVideo }
+            if (s.isNotEmpty()) s else videos.filter { !it.isLongVideo }
+        }
+        2 -> {
+            val l = userVideos.filter { it.isLongVideo }
+            if (l.isNotEmpty()) l else videos.filter { it.isLongVideo }
+        }
+        else -> likedVideos
     }
 
     Column(
@@ -115,7 +134,7 @@ fun ProfileScreen(
             }
 
             Text(
-                text = "Pengguna MyFlix",
+                text = userDanaProfile?.danaAccountName ?: "Aldi Prasetya",
                 color = TextPrimary,
                 fontSize = 17.sp,
                 fontWeight = FontWeight.Bold
@@ -123,7 +142,7 @@ fun ProfileScreen(
 
             IconButton(
                 onClick = {
-                    Toast.makeText(context, "Pengaturan & Privasi MyFlix", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "Pengaturan & Privasi VibeStream", Toast.LENGTH_SHORT).show()
                 },
                 modifier = Modifier.testTag("profile_menu_button")
             ) {
@@ -226,11 +245,180 @@ fun ProfileScreen(
 
             // Bio
             Text(
-                text = "Kreator konten di MyFlix 🇮🇩 Suka video kuliner nusantara, dance, dan seru-seruan! Klik tombol + untuk video baru.",
+                text = "Kreator konten di VibeStream 🇮🇩 Suka video kuliner nusantara, dance, dan seru-seruan! Klik tombol + untuk video baru.",
                 color = TextSecondary,
                 fontSize = 13.sp,
                 lineHeight = 18.sp
             )
+
+            Spacer(modifier = Modifier.height(14.dp))
+
+            // --- ETALASE BARCODE DANA PRIBADI (P2P DIRECT) ---
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(DarkSurfaceElevated)
+                    .border(1.5.dp, DanaBlue.copy(alpha = 0.5f), RoundedCornerShape(16.dp))
+                    .clickable { onOpenDanaEtalase() }
+                    .padding(14.dp)
+                    .testTag("profile_dana_etalase_card")
+            ) {
+                Column {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Box(
+                                modifier = Modifier
+                                    .size(36.dp)
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .background(DanaBlue),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.QrCode2,
+                                    contentDescription = null,
+                                    tint = Color.White,
+                                    modifier = Modifier.size(22.dp)
+                                )
+                            }
+                            Spacer(modifier = Modifier.width(10.dp))
+                            Column {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Text(
+                                        text = "Etalase Barcode DANA Pribadi",
+                                        color = TextPrimary,
+                                        fontSize = 13.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                    Spacer(modifier = Modifier.width(6.dp))
+                                    Text(
+                                        text = "P2P",
+                                        color = DanaBlue,
+                                        fontSize = 10.sp,
+                                        fontWeight = FontWeight.ExtraBold,
+                                        modifier = Modifier
+                                            .clip(RoundedCornerShape(4.dp))
+                                            .background(DanaBlue.copy(alpha = 0.15f))
+                                            .padding(horizontal = 4.dp, vertical = 1.dp)
+                                    )
+                                }
+                                Text(
+                                    text = "${userDanaProfile?.danaPhoneNumber ?: "0812-9876-5432"} • ${userDanaProfile?.danaAccountName ?: "ALDI PRASETYA"}",
+                                    color = TextMuted,
+                                    fontSize = 11.sp
+                                )
+                            }
+                        }
+
+                        Button(
+                            onClick = onOpenDanaEtalase,
+                            colors = ButtonDefaults.buttonColors(containerColor = DanaBlue),
+                            shape = RoundedCornerShape(10.dp),
+                            modifier = Modifier
+                                .height(34.dp)
+                                .testTag("manage_dana_barcode_button")
+                        ) {
+                            Text("Atur Barcode", color = Color.White, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "⚡ 100% saweran langsung masuk ke akun DANA Anda",
+                            color = TikTokCyan,
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Medium
+                        )
+                        Text(
+                            text = "${userDanaProfile?.totalDirectSawerCount ?: 14} Saweran Diterima",
+                            color = TikTokYellow,
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            // --- DOMPET VIBECOINS & PRINSIP BEBAS BIROKRASI ROW ---
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                // Coin Balance Card
+                Box(
+                    modifier = Modifier
+                        .weight(1.1f)
+                        .clip(RoundedCornerShape(14.dp))
+                        .background(DarkSurfaceElevated)
+                        .border(1.dp, TikTokYellow.copy(alpha = 0.35f), RoundedCornerShape(14.dp))
+                        .clickable { onOpenWallet() }
+                        .padding(12.dp)
+                        .testTag("profile_coin_wallet_card")
+                ) {
+                    Column {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(text = "🪙 VibeCoins", color = TikTokYellow, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                            Text(text = "Isi Mandiri >", color = TikTokCyan, fontSize = 10.sp, fontWeight = FontWeight.SemiBold)
+                        }
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "$userCoins Koin",
+                            color = TextPrimary,
+                            fontSize = 17.sp,
+                            fontWeight = FontWeight.ExtraBold
+                        )
+                        Text(
+                            text = "Koin hiburan & gift internal",
+                            color = TextMuted,
+                            fontSize = 9.sp
+                        )
+                    }
+                }
+
+                // Bureaucracy Free Policy Button Card
+                Box(
+                    modifier = Modifier
+                        .weight(0.9f)
+                        .clip(RoundedCornerShape(14.dp))
+                        .background(DarkSurfaceElevated)
+                        .border(1.dp, DarkBorder, RoundedCornerShape(14.dp))
+                        .clickable { onOpenPolicy() }
+                        .padding(12.dp)
+                        .testTag("profile_policy_card")
+                ) {
+                    Column {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = Icons.Default.Shield,
+                                contentDescription = null,
+                                tint = TikTokCyan,
+                                modifier = Modifier.size(14.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(text = "Bebas Birokrasi", color = TikTokCyan, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                        }
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(text = "0% Potongan", color = TextPrimary, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                        Text(text = "Tanpa tahan uang", color = TextMuted, fontSize = 9.sp)
+                    }
+                }
+            }
 
             Spacer(modifier = Modifier.height(12.dp))
         }
@@ -252,8 +440,9 @@ fun ProfileScreen(
             tabTitles.forEachIndexed { index, title ->
                 val icon = when (index) {
                     0 -> Icons.Default.GridView
-                    1 -> Icons.Default.Favorite
-                    else -> Icons.Default.Bookmark
+                    1 -> Icons.Default.Bolt
+                    2 -> Icons.Default.VideoLibrary
+                    else -> Icons.Default.Favorite
                 }
                 Tab(
                     selected = selectedTabIndex == index,
@@ -263,7 +452,12 @@ fun ProfileScreen(
                             imageVector = icon,
                             contentDescription = title,
                             tint = if (selectedTabIndex == index) {
-                                if (index == 1) TikTokRed else if (index == 2) TikTokYellow else Color.White
+                                when (index) {
+                                    1 -> TikTokCyan
+                                    2 -> TikTokRed
+                                    3 -> TikTokRed
+                                    else -> Color.White
+                                }
                             } else TextMuted,
                             modifier = Modifier.size(20.dp)
                         )
@@ -333,10 +527,27 @@ fun ProfileScreen(
                                 modifier = Modifier.size(14.dp)
                             )
                             Text(
-                                text = video.formattedLikes(),
+                                text = if (video.isLongVideo) video.formattedViews() else video.formattedLikes(),
                                 color = Color.White,
                                 fontSize = 10.sp,
                                 fontWeight = FontWeight.SemiBold
+                            )
+                        }
+
+                        // Duration badge
+                        Box(
+                            modifier = Modifier
+                                .align(Alignment.BottomEnd)
+                                .padding(4.dp)
+                                .clip(RoundedCornerShape(3.dp))
+                                .background(Color.Black.copy(alpha = 0.8f))
+                                .padding(horizontal = 4.dp, vertical = 1.dp)
+                        ) {
+                            Text(
+                                text = video.durationFormatted,
+                                color = if (video.isLongVideo) TikTokCyan else Color.White,
+                                fontSize = 9.sp,
+                                fontWeight = FontWeight.Bold
                             )
                         }
                     }

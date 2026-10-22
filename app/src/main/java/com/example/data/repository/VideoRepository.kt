@@ -1,16 +1,22 @@
 package com.example.data.repository
 
+import com.example.data.local.CoinTransactionEntity
 import com.example.data.local.CreatedVideoEntity
 import com.example.data.local.FollowedCreatorEntity
 import com.example.data.local.TokVidDao
+import com.example.data.local.UserCoinWalletEntity
 import com.example.data.local.UserCommentEntity
+import com.example.data.local.UserDanaProfileEntity
 import com.example.data.local.VideoInteractionEntity
 import com.example.data.model.CommentItem
 import com.example.data.model.NotificationItem
 import com.example.data.model.NotificationType
+import com.example.data.model.UserDanaProfile
+import com.example.data.model.VibeGift
 import com.example.data.model.VideoItem
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import java.util.UUID
 
@@ -129,7 +135,106 @@ class VideoRepository(private val dao: TokVidDao) {
             commentsCount = 5420,
             bookmarksCount = 72100,
             sharesCount = 18200,
-            category = "Teknologi"
+            category = "Teknologi",
+            isLongVideo = false,
+            durationFormatted = "0:52",
+            viewsCount = 320500L
+        ),
+        VideoItem(
+            id = "long_1",
+            videoUrl = "https://storage.googleapis.com/exoplayer-test-media-0/BigBuckBunny_320x180.mp4",
+            thumbnailUrl = "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=1000",
+            creatorUsername = "@tech_academy",
+            creatorName = "Tech Academy Indonesia",
+            creatorAvatar = "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200",
+            isVerified = true,
+            caption = "Tutorial Lengkap Membuat Aplikasi Web & Mobile Modern 2026: Arsitektur Scalable, Cloud Integration, dan Clean UI",
+            tags = listOf("tutorial", "coding", "android", "web", "teknologi"),
+            soundTitle = "Audio Asli - Tech Academy",
+            soundAuthor = "@tech_academy",
+            soundCoverUrl = "https://images.unsplash.com/photo-1518770660439-4636190af475?w=200",
+            likesCount = 89400,
+            commentsCount = 2150,
+            bookmarksCount = 34200,
+            sharesCount = 12400,
+            category = "Teknologi",
+            isLongVideo = true,
+            durationFormatted = "24:15",
+            viewsCount = 380000L,
+            description = "Pelajari langkah demi langkah cara membuat aplikasi video modern berkinerja tinggi. Di video berdurasi 24 menit ini kita membahas UI/UX interaktif, optimalisasi media player, pengelolaan cache, hingga deployment otomatis. Jangan lupa like, tinggalkan komentar, dan subscribe!",
+            resolution = "4K 60FPS"
+        ),
+        VideoItem(
+            id = "long_2",
+            videoUrl = "https://vjs.zencdn.net/v/oceans.mp4",
+            thumbnailUrl = "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1000",
+            creatorUsername = "@nature_documentary",
+            creatorName = "Ekspedisi Nusantara",
+            creatorAvatar = "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200",
+            isVerified = true,
+            caption = "Dokumenter 4K: Keajaiban Samudra Indonesia & Surga Tersembunyi Bawah Laut Raja Ampat",
+            tags = listOf("dokumenter", "alam", "rajaampat", "laut", "pesonaindonesia"),
+            soundTitle = "Ocean Symphony - Epic Wildlife",
+            soundAuthor = "@nature_sound",
+            soundCoverUrl = "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=200",
+            likesCount = 215000,
+            commentsCount = 6420,
+            bookmarksCount = 89000,
+            sharesCount = 34500,
+            category = "Wisata",
+            isLongVideo = true,
+            durationFormatted = "18:40",
+            viewsCount = 920000L,
+            description = "Menyelami kedalaman terumbu karang terindah di dunia. Kami menghabiskan 30 hari di kepulauan Raja Ampat untuk merekam biota laut langka, paus biru, dan kearifan lokal masyarakat pesisir.",
+            resolution = "4K Ultra HD"
+        ),
+        VideoItem(
+            id = "long_3",
+            videoUrl = "https://media.w3.org/2010/05/sintel/trailer.mp4",
+            thumbnailUrl = "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=1000",
+            creatorUsername = "@dapur_nusantara",
+            creatorName = "Chef Rendy",
+            creatorAvatar = "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200",
+            isVerified = true,
+            caption = "Resep Rahasia Rendang Daging Sapi Otentik Padang: Teknik Memasak 8 Jam Agar Hitam Sempurna & Bumbu Meresap",
+            tags = listOf("kuliner", "resep", "rendang", "masak", "indonesia"),
+            soundTitle = "Suara Dapur Tradisional - Chef Rendy",
+            soundAuthor = "@dapur_nusantara",
+            soundCoverUrl = "https://images.unsplash.com/photo-1556910103-1c02745aae4d?w=200",
+            likesCount = 340000,
+            commentsCount = 8200,
+            bookmarksCount = 120000,
+            sharesCount = 45000,
+            category = "Kuliner",
+            isLongVideo = true,
+            durationFormatted = "15:30",
+            viewsCount = 1250000L,
+            description = "Panduan lengkap memasak Rendang Daging Sapi khas Minang asli dari rempah pilihan hingga menjadi kalio lalu rendang hitam pekat yang lezat dan tahan berbulan-bulan tanpa pengawet.",
+            resolution = "1080p HD"
+        ),
+        VideoItem(
+            id = "long_4",
+            videoUrl = "https://raw.githubusercontent.com/intel-iot-devkit/sample-videos/master/people-detection.mp4",
+            thumbnailUrl = "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=1000",
+            creatorUsername = "@rizky_tech",
+            creatorName = "Rizky Gadget",
+            creatorAvatar = "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200",
+            isVerified = true,
+            caption = "Kompilasi Gadget Masa Depan 2026: AI Devices, Smart Glasses, dan Teknologi Layar Gulung",
+            tags = listOf("gadget", "teknologi", "future", "review", "ai"),
+            soundTitle = "Synthwave Tech Drive",
+            soundAuthor = "@rizky_tech",
+            soundCoverUrl = "https://images.unsplash.com/photo-1518770660439-4636190af475?w=200",
+            likesCount = 145000,
+            commentsCount = 4300,
+            bookmarksCount = 52000,
+            sharesCount = 18000,
+            category = "Teknologi",
+            isLongVideo = true,
+            durationFormatted = "12:10",
+            viewsCount = 540000L,
+            description = "Tinjauan mendalam berbagai inovasi perangkat pintar terbaru tahun 2026. Simak pengujian performa, ketahanan baterai, dan integrasi kecerdasan buatan dalam kehidupan sehari-hari.",
+            resolution = "1080p60"
         )
     )
 
@@ -180,7 +285,11 @@ class VideoRepository(private val dao: TokVidDao) {
                 isBookmarked = inter?.isBookmarked ?: false,
                 isFollowing = false,
                 category = created.category,
-                isUserCreated = true
+                isUserCreated = true,
+                isLongVideo = created.isLongVideo,
+                durationFormatted = created.durationFormatted,
+                viewsCount = 42L,
+                description = created.caption
             )
         }
 
@@ -293,17 +402,27 @@ class VideoRepository(private val dao: TokVidDao) {
         caption: String,
         tags: String,
         soundTitle: String,
-        category: String
+        category: String,
+        isLongVideo: Boolean = false,
+        durationFormatted: String = if (isLongVideo) "14:20" else "0:45",
+        videoUrl: String? = null,
+        thumbnailUrl: String? = null
     ) {
         val id = "created_${UUID.randomUUID().toString().take(8)}"
-        // Pick one of the lively clips as source
+        // Pick one of the lively clips as source if not provided
         val sampleClips = listOf(
             "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
             "https://vjs.zencdn.net/v/oceans.mp4",
             "https://storage.googleapis.com/exoplayer-test-media-0/BigBuckBunny_320x180.mp4"
         )
-        val chosenVideo = sampleClips.random()
-        val chosenThumb = "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=800"
+        val chosenVideo = if (!videoUrl.isNullOrBlank()) videoUrl else sampleClips.random()
+        val chosenThumb = if (!thumbnailUrl.isNullOrBlank()) {
+            thumbnailUrl
+        } else if (isLongVideo) {
+            "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=1000"
+        } else {
+            "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=800"
+        }
 
         dao.insertCreatedVideo(
             CreatedVideoEntity(
@@ -313,7 +432,9 @@ class VideoRepository(private val dao: TokVidDao) {
                 caption = caption,
                 tags = tags,
                 soundTitle = if (soundTitle.isNotBlank()) soundTitle else "Suara Asli - @saya",
-                category = category
+                category = category,
+                isLongVideo = isLongVideo,
+                durationFormatted = durationFormatted
             )
         )
     }
@@ -353,6 +474,194 @@ class VideoRepository(private val dao: TokVidDao) {
                 description = "Hashtag #fyp2026 sedang naik daun di Indonesia. Buat video sekarang!",
                 timeAgo = "Kemarin",
                 type = NotificationType.TREND
+            )
+        )
+    }
+
+    // --- P2P DANA Showcase Profile ---
+    fun getUserDanaProfile(): Flow<UserDanaProfile> {
+        return dao.getUserDanaProfile().map { entity ->
+            if (entity != null) {
+                UserDanaProfile(
+                    id = entity.id,
+                    danaPhoneNumber = entity.danaPhoneNumber,
+                    danaAccountName = entity.danaAccountName,
+                    qrCustomImageUrl = entity.qrCustomImageUrl,
+                    notes = entity.notes,
+                    isDanaActive = entity.isDanaActive,
+                    totalDirectSawerCount = entity.totalDirectSawerCount
+                )
+            } else {
+                UserDanaProfile(
+                    id = "primary_user_dana",
+                    danaPhoneNumber = "0812-9876-5432",
+                    danaAccountName = "ALDI PRASETYA",
+                    qrCustomImageUrl = null,
+                    notes = "Dukung karya konten saya! Saweran langsung P2P via DANA 100% tanpa potongan.",
+                    isDanaActive = true,
+                    totalDirectSawerCount = 14
+                )
+            }
+        }
+    }
+
+    suspend fun saveUserDanaProfile(
+        phoneNumber: String,
+        accountName: String,
+        qrImageUrl: String?,
+        notes: String,
+        isActive: Boolean
+    ) {
+        val current = dao.getUserDanaProfileSync()
+        val count = current?.totalDirectSawerCount ?: 14L
+        dao.upsertUserDanaProfile(
+            UserDanaProfileEntity(
+                id = "primary_user_dana",
+                danaPhoneNumber = phoneNumber,
+                danaAccountName = accountName,
+                qrCustomImageUrl = qrImageUrl,
+                notes = notes,
+                isDanaActive = isActive,
+                totalDirectSawerCount = count
+            )
+        )
+    }
+
+    suspend fun incrementDirectSawerCount() {
+        val current = dao.getUserDanaProfileSync()
+        if (current != null) {
+            dao.upsertUserDanaProfile(current.copy(totalDirectSawerCount = current.totalDirectSawerCount + 1))
+        }
+    }
+
+    // --- VibeCoins Internal Currency System ---
+    fun getUserCoinWallet(): Flow<Long> {
+        return dao.getUserCoinWallet().map { wallet ->
+            if (wallet == null) {
+                // Initialize with 500 bonus coins
+                dao.upsertCoinWallet(UserCoinWalletEntity("primary_user_wallet", 500L))
+                dao.insertCoinTransaction(
+                    CoinTransactionEntity(
+                        id = "tx_welcome_${System.currentTimeMillis()}",
+                        title = "Bonus Selamat Datang",
+                        amount = 500L,
+                        isEarned = true,
+                        description = "Modal awal koin interaksi & gift P2P",
+                        iconEmoji = "🪙"
+                    )
+                )
+                500L
+            } else {
+                wallet.balance
+            }
+        }
+    }
+
+    fun getAllCoinTransactions(): Flow<List<CoinTransactionEntity>> {
+        return dao.getAllCoinTransactions()
+    }
+
+    suspend fun rechargeCoins(amount: Long, packageName: String) {
+        val current = dao.getUserCoinWalletSync()
+        val currentBalance = current?.balance ?: 500L
+        val newBalance = currentBalance + amount
+
+        dao.upsertCoinWallet(UserCoinWalletEntity("primary_user_wallet", newBalance))
+        dao.insertCoinTransaction(
+            CoinTransactionEntity(
+                id = "tx_recharge_${System.currentTimeMillis()}",
+                title = "Konversi Mandiri: $packageName",
+                amount = amount,
+                isEarned = true,
+                description = "Konversi mandiri tanpa gateway pihak ketiga",
+                iconEmoji = "⚡"
+            )
+        )
+    }
+
+    suspend fun claimDailyReward(): Boolean {
+        val current = dao.getUserCoinWalletSync()
+        val currentBalance = current?.balance ?: 500L
+        val newBalance = currentBalance + 150L
+
+        dao.upsertCoinWallet(UserCoinWalletEntity("primary_user_wallet", newBalance))
+        dao.insertCoinTransaction(
+            CoinTransactionEntity(
+                id = "tx_daily_${System.currentTimeMillis()}",
+                title = "Klaim Bonus Harian",
+                amount = 150L,
+                isEarned = true,
+                description = "Bonus harian interaksi komunitas",
+                iconEmoji = "🎁"
+            )
+        )
+        return true
+    }
+
+    suspend fun redeemVoucher(code: String): Boolean {
+        val upper = code.trim().uppercase()
+        val (amount, label) = when (upper) {
+            "VIBE2026" -> Pair(500L, "Voucher Komunitas Vibe 2026")
+            "SAWER100" -> Pair(250L, "Voucher Spesial Sawer P2P")
+            "CREATOR50" -> Pair(150L, "Voucher Semangat Kreator")
+            "MERDEKA" -> Pair(300L, "Voucher Bebas Birokrasi")
+            else -> return false
+        }
+
+        val current = dao.getUserCoinWalletSync()
+        val currentBalance = current?.balance ?: 500L
+        val newBalance = currentBalance + amount
+
+        dao.upsertCoinWallet(UserCoinWalletEntity("primary_user_wallet", newBalance))
+        dao.insertCoinTransaction(
+            CoinTransactionEntity(
+                id = "tx_voucher_${System.currentTimeMillis()}",
+                title = label,
+                amount = amount,
+                isEarned = true,
+                description = "Penukaran kode voucher '$upper'",
+                iconEmoji = "🎟️"
+            )
+        )
+        return true
+    }
+
+    suspend fun spendCoinsForGift(gift: VibeGift, creatorName: String): Boolean {
+        val current = dao.getUserCoinWalletSync()
+        val currentBalance = current?.balance ?: 500L
+        if (currentBalance < gift.coinCost) {
+            return false
+        }
+
+        val newBalance = currentBalance - gift.coinCost
+        dao.upsertCoinWallet(UserCoinWalletEntity("primary_user_wallet", newBalance))
+        dao.insertCoinTransaction(
+            CoinTransactionEntity(
+                id = "tx_gift_${System.currentTimeMillis()}",
+                title = "Kirim Gift: ${gift.emoji} ${gift.name}",
+                amount = gift.coinCost,
+                isEarned = false,
+                description = "Dikirim untuk kreator $creatorName",
+                iconEmoji = gift.emoji
+            )
+        )
+        return true
+    }
+
+    suspend fun rewardCoinForInteraction(reason: String, amount: Long = 5L) {
+        val current = dao.getUserCoinWalletSync()
+        val currentBalance = current?.balance ?: 500L
+        val newBalance = currentBalance + amount
+
+        dao.upsertCoinWallet(UserCoinWalletEntity("primary_user_wallet", newBalance))
+        dao.insertCoinTransaction(
+            CoinTransactionEntity(
+                id = "tx_reward_${System.currentTimeMillis()}",
+                title = "Reward Interaksi",
+                amount = amount,
+                isEarned = true,
+                description = reason,
+                iconEmoji = "✨"
             )
         )
     }

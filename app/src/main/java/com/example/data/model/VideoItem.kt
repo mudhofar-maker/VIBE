@@ -21,12 +21,23 @@ data class VideoItem(
     val isBookmarked: Boolean = false,
     val isFollowing: Boolean = false,
     val category: String = "Untuk Anda",
-    val isUserCreated: Boolean = false
+    val isUserCreated: Boolean = false,
+    val isLongVideo: Boolean = false,
+    val durationFormatted: String = if (isLongVideo) "15:20" else "0:45",
+    val viewsCount: Long = 125_000L,
+    val description: String = caption,
+    val resolution: String = "1080p HD",
+    val creatorDanaNumber: String = "0812-3456-7890",
+    val creatorDanaName: String = creatorName,
+    val creatorDanaQrUrl: String = "",
+    val creatorDanaNote: String = "Saweran langsung masuk akun DANA saya 100% P2P tanpa potongan",
+    val isDanaVerified: Boolean = true
 ) {
     fun formattedLikes(): String = formatCount(likesCount)
     fun formattedComments(): String = formatCount(commentsCount)
     fun formattedBookmarks(): String = formatCount(bookmarksCount)
     fun formattedShares(): String = formatCount(sharesCount)
+    fun formattedViews(): String = formatCount(viewsCount)
 
     companion object {
         fun formatCount(count: Long): String {

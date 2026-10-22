@@ -1,6 +1,6 @@
 {
-  "name": "Remix VibeStream",
-  "description": "Create, share, and discover engaging short-form videos with a global community of creators.",
+  "name": "VibeStream",
+  "description": "Aplikasi video terpadu untuk Shorts (vertikal 9:16) dan Video Panjang (widescreen 16:9) dengan pemutar ExoPlayer interaktif, feed kategori, komentar, dan creator hub.",
   "requestFramePermissions": [],
   "majorCapabilities": [
     "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"

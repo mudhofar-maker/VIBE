@@ -22,6 +22,6 @@ dependencyResolutionManagement {
   }
 }
 
-rootProject.name = "MyFlix"
+rootProject.name = "VibeStream"
 
 include(":app")

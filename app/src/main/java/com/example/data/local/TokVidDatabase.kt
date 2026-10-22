@@ -10,9 +10,12 @@ import androidx.room.RoomDatabase
         VideoInteractionEntity::class,
         UserCommentEntity::class,
         FollowedCreatorEntity::class,
-        CreatedVideoEntity::class
+        CreatedVideoEntity::class,
+        UserDanaProfileEntity::class,
+        UserCoinWalletEntity::class,
+        CoinTransactionEntity::class
     ],
-    version = 1,
+    version = 3,
     exportSchema = false
 )
 abstract class TokVidDatabase : RoomDatabase() {
