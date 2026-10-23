@@ -59,6 +59,7 @@ import com.example.ui.components.CreateContentBottomSheet
 import com.example.ui.components.CreatorProfileDialog
 import com.example.ui.components.DanaProfileEtalaseDialog
 import com.example.ui.components.DanaSawerP2PDialog
+import com.example.ui.components.DanaWithdrawalDialog
 import com.example.ui.components.GiftBurstOverlay
 import com.example.ui.components.ShareBottomSheet
 import com.example.ui.components.SoundDetailDialog
@@ -66,6 +67,7 @@ import com.example.ui.components.UploadVideoDialog
 import com.example.ui.components.VibeCoinWalletDialog
 import com.example.ui.components.VibeGiftBottomSheet
 import com.example.ui.screens.CreateScreen
+import com.example.ui.screens.CreatorDashboardScreen
 import com.example.ui.screens.ExploreScreen
 import com.example.ui.screens.HomeScreen
 import com.example.ui.screens.InboxScreen
@@ -110,7 +112,17 @@ fun TokVidApp(viewModel: MainViewModel) {
     val isWalletOpen by viewModel.isWalletDialogOpen.collectAsStateWithLifecycle()
     val isDanaProfileOpen by viewModel.isDanaProfileDialogOpen.collectAsStateWithLifecycle()
     val isPolicyOpen by viewModel.isPolicyDialogOpen.collectAsStateWithLifecycle()
+    val isWithdrawalOpen by viewModel.isWithdrawalDialogOpen.collectAsStateWithLifecycle()
     val activeGiftAnimation by viewModel.activeGiftAnimation.collectAsStateWithLifecycle()
+
+    // Creator Dashboard States
+    val creatorEarnings by viewModel.creatorEarningsSummary.collectAsStateWithLifecycle()
+    val creatorPerformance by viewModel.creatorPerformanceSummary.collectAsStateWithLifecycle()
+    val creatorVideos by viewModel.creatorVideos.collectAsStateWithLifecycle()
+    val creatorTimeRange by viewModel.creatorTimeRange.collectAsStateWithLifecycle()
+    val contentFilter by viewModel.contentFilter.collectAsStateWithLifecycle()
+    val contentSearchQuery by viewModel.contentSearchQuery.collectAsStateWithLifecycle()
+    val thirtyDayTrend by viewModel.thirtyDayEarningsTrend.collectAsStateWithLifecycle()
 
     val commentsSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val shareSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -124,6 +136,8 @@ fun TokVidApp(viewModel: MainViewModel) {
     BackHandler(enabled = currentTab != NavigationTab.HOME) {
         if (currentTab == NavigationTab.WATCH) {
             viewModel.closeWatchVideo()
+        } else if (currentTab == NavigationTab.CREATOR_DASHBOARD) {
+            viewModel.setNavTab(NavigationTab.PROFILE)
         } else {
             viewModel.setNavTab(NavigationTab.HOME)
         }
@@ -156,8 +170,18 @@ fun TokVidApp(viewModel: MainViewModel) {
                     onLiveClick = {
                         Toast.makeText(context, "Menghubungkan ke siaran langsung VibeStream...", Toast.LENGTH_SHORT).show()
                     },
-                    onLikeClick = { viewModel.toggleLike(it) },
-                    onBookmarkClick = { viewModel.toggleBookmark(it) },
+                    onLikeClick = {
+                        viewModel.toggleLike(it)
+                        if (!it.isLiked) {
+                            Toast.makeText(context, "❤️ Disukai! Apresiasi penggemar Rp 0,05 tercatat", Toast.LENGTH_SHORT).show()
+                        }
+                    },
+                    onBookmarkClick = {
+                        viewModel.toggleBookmark(it)
+                        if (!it.isBookmarked) {
+                            Toast.makeText(context, "🔖 Disimpan! Apresiasi penggemar Rp 0,05 tercatat", Toast.LENGTH_SHORT).show()
+                        }
+                    },
                     onCommentClick = { viewModel.openComments(it) },
                     onShareClick = { viewModel.openShare(it) },
                     onSoundClick = { viewModel.openSound(it) },
@@ -176,10 +200,23 @@ fun TokVidApp(viewModel: MainViewModel) {
                         comments = currentComments,
                         onBackClick = { viewModel.closeWatchVideo() },
                         onVideoSelected = { video -> viewModel.openWatchVideo(video) },
-                        onLikeClick = { viewModel.toggleLike(it) },
-                        onBookmarkClick = { viewModel.toggleBookmark(it) },
+                        onLikeClick = {
+                            viewModel.toggleLike(it)
+                            if (!it.isLiked) {
+                                Toast.makeText(context, "❤️ Disukai! Apresiasi penggemar Rp 0,05 tercatat", Toast.LENGTH_SHORT).show()
+                            }
+                        },
+                        onBookmarkClick = {
+                            viewModel.toggleBookmark(it)
+                            if (!it.isBookmarked) {
+                                Toast.makeText(context, "🔖 Disimpan! Apresiasi penggemar Rp 0,05 tercatat", Toast.LENGTH_SHORT).show()
+                            }
+                        },
                         onShareClick = { viewModel.openShare(it) },
-                        onAddComment = { text -> viewModel.addComment(selectedWatchVideo!!.id, text) },
+                        onAddComment = { text ->
+                            viewModel.addComment(selectedWatchVideo!!.id, text)
+                            Toast.makeText(context, "💬 Komentar terkirim! Apresiasi penggemar Rp 0,05 tercatat", Toast.LENGTH_SHORT).show()
+                        },
                         onDanaSawerClick = { viewModel.openDanaSawer(it) },
                         onGiftClick = { viewModel.openGiftSheet(it) }
                     )
@@ -251,14 +288,47 @@ fun TokVidApp(viewModel: MainViewModel) {
                         },
                         onOpenDanaEtalase = { viewModel.openDanaProfileDialog() },
                         onOpenWallet = { viewModel.openWalletDialog() },
-                        onOpenPolicy = { viewModel.openPolicyDialog() }
+                        onOpenPolicy = { viewModel.openPolicyDialog() },
+                        onOpenWithdrawal = { viewModel.openWithdrawalDialog() },
+                        onOpenCreatorDashboard = { viewModel.setNavTab(NavigationTab.CREATOR_DASHBOARD) }
                     )
                 }
             }
+
+            NavigationTab.CREATOR_DASHBOARD -> {
+                CreatorDashboardScreen(
+                    earningsSummary = creatorEarnings,
+                    performanceSummary = creatorPerformance,
+                    creatorVideos = creatorVideos,
+                    userDanaProfile = userDanaProfile,
+                    selectedTimeRange = creatorTimeRange,
+                    selectedFilterType = contentFilter,
+                    searchQuery = contentSearchQuery,
+                    thirtyDayTrend = thirtyDayTrend,
+                    onTimeRangeSelected = { viewModel.setCreatorTimeRange(it) },
+                    onFilterSelected = { viewModel.setContentFilter(it) },
+                    onSearchQueryChange = { viewModel.setContentSearchQuery(it) },
+                    onVideoClick = { video ->
+                        if (video.isLongVideo) {
+                            viewModel.openWatchVideo(video)
+                        } else {
+                            viewModel.openShorts(video)
+                        }
+                    },
+                    onDeleteVideo = { viewModel.deleteVideo(it) },
+                    onUpdateVideo = { id, caption, tags -> viewModel.updateVideo(id, caption, tags) },
+                    onOpenWithdrawal = { viewModel.openWithdrawalDialog() },
+                    onOpenUploadNewVideo = {
+                        uploadInitialIsLongVideo = false
+                        showUploadDialog = true
+                    },
+                    onBackClick = { viewModel.setNavTab(NavigationTab.PROFILE) }
+                )
+            }
         }
 
-        // Floating Bottom Navigation Bar (Hidden during full-screen player or recording)
-        if (currentTab != NavigationTab.CREATE && currentTab != NavigationTab.WATCH) {
+        // Floating Bottom Navigation Bar (Hidden during full-screen player, recording, or creator studio)
+        if (currentTab != NavigationTab.CREATE && currentTab != NavigationTab.WATCH && currentTab != NavigationTab.CREATOR_DASHBOARD) {
             TokVidBottomNavBar(
                 currentTab = currentTab,
                 onTabSelected = { viewModel.setNavTab(it) },
@@ -317,7 +387,7 @@ fun TokVidApp(viewModel: MainViewModel) {
                 onDismiss = { viewModel.closeComments() },
                 onSendComment = { text ->
                     viewModel.addComment(commentsVideo!!.id, text)
-                    Toast.makeText(context, "Komentar terkirim!", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "💬 Komentar terkirim! Apresiasi penggemar Rp 0,05 tercatat", Toast.LENGTH_SHORT).show()
                 }
             )
         }
@@ -327,6 +397,10 @@ fun TokVidApp(viewModel: MainViewModel) {
             ShareBottomSheet(
                 sheetState = shareSheetState,
                 video = shareVideo!!,
+                onShareAction = {
+                    viewModel.incrementCoinsForShare(shareVideo!!.creatorUsername)
+                    Toast.makeText(context, "↗️ Dibagikan! Apresiasi penggemar Rp 0,05 tercatat", Toast.LENGTH_SHORT).show()
+                },
                 onDismiss = { viewModel.closeShare() }
             )
         }
@@ -391,6 +465,7 @@ fun TokVidApp(viewModel: MainViewModel) {
                 currentCoins = userCoins,
                 transactions = coinTransactions,
                 onRechargeCoins = { amount, label -> viewModel.rechargeCoins(amount, label) },
+                onConvertCoins = { count, onDone -> viewModel.convertCoins(count, onDone) },
                 onClaimDailyReward = { viewModel.claimDailyReward() },
                 onRedeemVoucher = { code ->
                     var success = false
@@ -400,6 +475,10 @@ fun TokVidApp(viewModel: MainViewModel) {
                 onOpenPolicy = {
                     viewModel.closeWalletDialog()
                     viewModel.openPolicyDialog()
+                },
+                onOpenWithdrawal = {
+                    viewModel.closeWalletDialog()
+                    viewModel.openWithdrawalDialog()
                 },
                 onDismiss = { viewModel.closeWalletDialog() }
             )
@@ -420,6 +499,21 @@ fun TokVidApp(viewModel: MainViewModel) {
         if (isPolicyOpen) {
             BureaucracyFreePolicyDialog(
                 onDismiss = { viewModel.closePolicyDialog() }
+            )
+        }
+
+        // Tool Tarik ke DANA Sendiri Dialog (Hasil Sawer / Apresiasi & Koin Mandiri)
+        if (isWithdrawalOpen) {
+            DanaWithdrawalDialog(
+                userDanaProfile = userDanaProfile ?: com.example.data.model.UserDanaProfile(),
+                currentCoins = userCoins,
+                onWithdrawSawerBalance = { amountRupiah, targetPhone, targetName, onResult ->
+                    viewModel.withdrawFromSawerBalanceToDana(amountRupiah, targetPhone, targetName, onResult)
+                },
+                onWithdrawCoins = { coinCount, targetPhone, targetName, onResult ->
+                    viewModel.withdrawCoinsToDana(coinCount, targetPhone, targetName, onResult)
+                },
+                onDismiss = { viewModel.closeWithdrawalDialog() }
             )
         }
 

@@ -40,6 +40,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.ScrollableTabRow
@@ -67,7 +68,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Remove
+import androidx.compose.ui.text.input.KeyboardType
 import com.example.data.local.CoinTransactionEntity
+import com.example.data.model.CoinConversionCalculation
 import com.example.data.model.SelfRechargePackage
 import com.example.ui.theme.DarkBorder
 import com.example.ui.theme.DarkCard
@@ -79,6 +86,7 @@ import com.example.ui.theme.TextSecondary
 import com.example.ui.theme.TikTokCyan
 import com.example.ui.theme.TikTokRed
 import com.example.ui.theme.TikTokYellow
+import java.text.NumberFormat
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -88,9 +96,11 @@ fun VibeCoinWalletDialog(
     currentCoins: Long,
     transactions: List<CoinTransactionEntity>,
     onRechargeCoins: (amount: Long, packageName: String) -> Unit,
+    onConvertCoins: (coinCount: Long, onResult: (CoinConversionCalculation) -> Unit) -> Unit = { _, _ -> },
     onClaimDailyReward: () -> Unit,
     onRedeemVoucher: (code: String) -> Boolean,
     onOpenPolicy: () -> Unit,
+    onOpenWithdrawal: () -> Unit = {},
     onDismiss: () -> Unit
 ) {
     val context = LocalContext.current
@@ -271,10 +281,10 @@ fun VibeCoinWalletDialog(
                         onClick = { selectedTab = 0 },
                         text = {
                             Text(
-                                text = "Isi Mandiri",
+                                text = "💱 Alat Konversi",
                                 fontSize = 12.sp,
                                 fontWeight = if (selectedTab == 0) FontWeight.Bold else FontWeight.Normal,
-                                color = if (selectedTab == 0) TextPrimary else TextMuted
+                                color = if (selectedTab == 0) TikTokYellow else TextMuted
                             )
                         }
                     )
@@ -283,7 +293,7 @@ fun VibeCoinWalletDialog(
                         onClick = { selectedTab = 1 },
                         text = {
                             Text(
-                                text = "Klaim / Voucher",
+                                text = "Isi Mandiri",
                                 fontSize = 12.sp,
                                 fontWeight = if (selectedTab == 1) FontWeight.Bold else FontWeight.Normal,
                                 color = if (selectedTab == 1) TextPrimary else TextMuted
@@ -295,7 +305,7 @@ fun VibeCoinWalletDialog(
                         onClick = { selectedTab = 2 },
                         text = {
                             Text(
-                                text = "Riwayat Koin",
+                                text = "Klaim / Voucher",
                                 fontSize = 12.sp,
                                 fontWeight = if (selectedTab == 2) FontWeight.Bold else FontWeight.Normal,
                                 color = if (selectedTab == 2) TextPrimary else TextMuted
@@ -307,10 +317,22 @@ fun VibeCoinWalletDialog(
                         onClick = { selectedTab = 3 },
                         text = {
                             Text(
-                                text = "Prinsip P2P",
+                                text = "Riwayat Koin",
                                 fontSize = 12.sp,
                                 fontWeight = if (selectedTab == 3) FontWeight.Bold else FontWeight.Normal,
-                                color = if (selectedTab == 3) TikTokCyan else TextMuted
+                                color = if (selectedTab == 3) TextPrimary else TextMuted
+                            )
+                        }
+                    )
+                    Tab(
+                        selected = selectedTab == 4,
+                        onClick = { selectedTab = 4 },
+                        text = {
+                            Text(
+                                text = "Prinsip P2P",
+                                fontSize = 12.sp,
+                                fontWeight = if (selectedTab == 4) FontWeight.Bold else FontWeight.Normal,
+                                color = if (selectedTab == 4) TikTokCyan else TextMuted
                             )
                         }
                     )
@@ -319,9 +341,398 @@ fun VibeCoinWalletDialog(
                 Spacer(modifier = Modifier.height(12.dp))
 
                 // Tab Content
-                Box(modifier = Modifier.weight(1f, fill = false).height(310.dp)) {
+                Box(modifier = Modifier.weight(1f, fill = false).height(330.dp)) {
                     when (selectedTab) {
                         0 -> {
+                            // Alat Konversi Koin: 1 Koin = Rp 8.000, Pembayaran = Rp 10.000, Margin Owner = Rp 2.000
+                            var coinCountInput by remember { mutableStateOf("1") }
+                            var isConverting by remember { mutableStateOf(false) }
+                            val currentInputVal = coinCountInput.toLongOrNull() ?: 1L
+                            val coinCount = currentInputVal.coerceAtLeast(1L)
+                            val calc = remember(coinCount) { CoinConversionCalculation(coinCount = coinCount) }
+
+                            fun formatIdr(amount: Long): String {
+                                return "Rp " + NumberFormat.getNumberInstance(Locale("id", "ID")).format(amount)
+                            }
+
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .verticalScroll(rememberScrollState())
+                            ) {
+                                // Rate formula banner
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clip(RoundedCornerShape(12.dp))
+                                        .background(DarkCard)
+                                        .border(1.dp, TikTokYellow.copy(alpha = 0.4f), RoundedCornerShape(12.dp))
+                                        .padding(10.dp)
+                                ) {
+                                    Column {
+                                        Row(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            horizontalArrangement = Arrangement.SpaceBetween,
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                                Text(text = "⚖️", fontSize = 16.sp)
+                                                Spacer(modifier = Modifier.width(6.dp))
+                                                Text(
+                                                    text = "Skema Konversi Koin Transparan",
+                                                    color = TikTokYellow,
+                                                    fontSize = 12.sp,
+                                                    fontWeight = FontWeight.Bold
+                                                )
+                                            }
+                                            Text(
+                                                text = "Margin Owner 20%",
+                                                color = TikTokCyan,
+                                                fontSize = 10.sp,
+                                                fontWeight = FontWeight.Bold,
+                                                modifier = Modifier
+                                                    .clip(RoundedCornerShape(6.dp))
+                                                    .background(TikTokCyan.copy(alpha = 0.15f))
+                                                    .padding(horizontal = 6.dp, vertical = 2.dp)
+                                            )
+                                        }
+                                        Spacer(modifier = Modifier.height(6.dp))
+                                        Text(
+                                            text = "• Nilai 1 Koin Pengguna: Rp 8.000\n• Pembayaran Pengguna: Rp 10.000\n• Keuntungan Owner: Rp 2.000 / koin",
+                                            color = TextSecondary,
+                                            fontSize = 11.sp,
+                                            fontWeight = FontWeight.Medium,
+                                            lineHeight = 16.sp
+                                        )
+                                    }
+                                }
+
+                                Spacer(modifier = Modifier.height(10.dp))
+
+                                // Quick chips
+                                Text(
+                                    text = "Pilih Jumlah Koin Cepat:",
+                                    color = TextMuted,
+                                    fontSize = 11.sp
+                                )
+                                Spacer(modifier = Modifier.height(6.dp))
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                ) {
+                                    listOf(1L, 5L, 10L, 25L, 50L, 100L).forEach { qty ->
+                                        val isQtySelected = coinCount == qty
+                                        Box(
+                                            modifier = Modifier
+                                                .weight(1f)
+                                                .clip(RoundedCornerShape(8.dp))
+                                                .background(if (isQtySelected) TikTokRed else DarkSurfaceElevated)
+                                                .border(1.dp, if (isQtySelected) TikTokRed else DarkBorder, RoundedCornerShape(8.dp))
+                                                .clickable { coinCountInput = qty.toString() }
+                                                .padding(vertical = 6.dp),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Text(
+                                                text = "$qty",
+                                                color = if (isQtySelected) Color.White else TextPrimary,
+                                                fontSize = 11.sp,
+                                                fontWeight = FontWeight.Bold
+                                            )
+                                        }
+                                    }
+                                }
+
+                                Spacer(modifier = Modifier.height(10.dp))
+
+                                // Stepper & Input
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    IconButton(
+                                        onClick = {
+                                            val newVal = (coinCount - 1).coerceAtLeast(1L)
+                                            coinCountInput = newVal.toString()
+                                        },
+                                        modifier = Modifier
+                                            .size(42.dp)
+                                            .clip(RoundedCornerShape(10.dp))
+                                            .background(DarkSurfaceElevated)
+                                            .border(1.dp, DarkBorder, RoundedCornerShape(10.dp))
+                                            .testTag("decrement_coin_input_button")
+                                    ) {
+                                        Icon(imageVector = Icons.Default.Remove, contentDescription = "Kurang", tint = TextPrimary)
+                                    }
+
+                                    Spacer(modifier = Modifier.width(8.dp))
+
+                                    OutlinedTextField(
+                                        value = coinCountInput,
+                                        onValueChange = { input ->
+                                            val filtered = input.filter { it.isDigit() }
+                                            if (filtered.length <= 6) {
+                                                coinCountInput = filtered
+                                            }
+                                        },
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .testTag("coin_conversion_input_field"),
+                                        singleLine = true,
+                                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                                        colors = OutlinedTextFieldDefaults.colors(
+                                            focusedBorderColor = TikTokRed,
+                                            unfocusedBorderColor = DarkBorder,
+                                            focusedTextColor = TextPrimary,
+                                            unfocusedTextColor = TextPrimary
+                                        ),
+                                        shape = RoundedCornerShape(10.dp),
+                                        trailingIcon = {
+                                            Text(
+                                                text = "Koin",
+                                                color = TikTokYellow,
+                                                fontSize = 12.sp,
+                                                fontWeight = FontWeight.Bold,
+                                                modifier = Modifier.padding(end = 8.dp)
+                                            )
+                                        }
+                                    )
+
+                                    Spacer(modifier = Modifier.width(8.dp))
+
+                                    IconButton(
+                                        onClick = {
+                                            val newVal = coinCount + 1
+                                            coinCountInput = newVal.toString()
+                                        },
+                                        modifier = Modifier
+                                            .size(42.dp)
+                                            .clip(RoundedCornerShape(10.dp))
+                                            .background(DarkSurfaceElevated)
+                                            .border(1.dp, DarkBorder, RoundedCornerShape(10.dp))
+                                            .testTag("increment_coin_input_button")
+                                    ) {
+                                        Icon(imageVector = Icons.Default.Add, contentDescription = "Tambah", tint = TextPrimary)
+                                    }
+                                }
+
+                                Spacer(modifier = Modifier.height(10.dp))
+
+                                // Real-time Breakdown Summary Card
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clip(RoundedCornerShape(12.dp))
+                                        .background(Color(0xFF131822))
+                                        .border(1.dp, DarkBorder, RoundedCornerShape(12.dp))
+                                        .padding(12.dp)
+                                ) {
+                                    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                                        Row(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            horizontalArrangement = Arrangement.SpaceBetween
+                                        ) {
+                                            Text("Jumlah Koin Diperoleh:", color = TextMuted, fontSize = 11.sp)
+                                            Text("${calc.coinCount} Koin", color = TikTokYellow, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                                        }
+                                        Row(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            horizontalArrangement = Arrangement.SpaceBetween
+                                        ) {
+                                            Text("Nilai Koin (@Rp 8.000):", color = TextMuted, fontSize = 11.sp)
+                                            Text(formatIdr(calc.totalCoinValue), color = TikTokCyan, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                                        }
+                                        Row(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            horizontalArrangement = Arrangement.SpaceBetween
+                                        ) {
+                                            Text("Pembayaran Pengguna (@Rp 10.000):", color = TextMuted, fontSize = 11.sp)
+                                            Text(formatIdr(calc.totalUserPayment), color = TextPrimary, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                                        }
+                                        HorizontalDivider(color = DarkBorder, modifier = Modifier.padding(vertical = 2.dp))
+                                        Row(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            horizontalArrangement = Arrangement.SpaceBetween,
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                                Text(text = "💼", fontSize = 12.sp)
+                                                Spacer(modifier = Modifier.width(4.dp))
+                                                Text("Keuntungan Owner (@Rp 2.000):", color = TikTokYellow, fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
+                                            }
+                                            Text(
+                                                text = "+${formatIdr(calc.totalOwnerProfit)}",
+                                                color = TikTokYellow,
+                                                fontSize = 12.sp,
+                                                fontWeight = FontWeight.Bold
+                                            )
+                                        }
+                                    }
+                                }
+
+                                Spacer(modifier = Modifier.height(12.dp))
+
+                                Button(
+                                    onClick = {
+                                        if (calc.coinCount <= 0L) return@Button
+                                        isConverting = true
+                                        onConvertCoins(calc.coinCount) { res ->
+                                            isConverting = false
+                                            Toast.makeText(
+                                                context,
+                                                "Konversi Berhasil! +${res.coinCount} Koin (Owner Profit: ${formatIdr(res.totalOwnerProfit)})",
+                                                Toast.LENGTH_LONG
+                                            ).show()
+                                        }
+                                    },
+                                    enabled = !isConverting,
+                                    colors = ButtonDefaults.buttonColors(containerColor = TikTokRed),
+                                    shape = RoundedCornerShape(12.dp),
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(46.dp)
+                                        .testTag("execute_coin_conversion_button")
+                                ) {
+                                    Icon(imageVector = Icons.Default.MonetizationOn, contentDescription = null, tint = Color.White, modifier = Modifier.size(16.dp))
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text(
+                                        text = "Konversi ${calc.coinCount} Koin (${formatIdr(calc.totalUserPayment)})",
+                                        color = Color.White,
+                                        fontSize = 13.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
+
+                                Spacer(modifier = Modifier.height(8.dp))
+
+                                OutlinedButton(
+                                    onClick = {
+                                        onDismiss()
+                                        onOpenWithdrawal()
+                                    },
+                                    border = androidx.compose.foundation.BorderStroke(1.dp, DanaBlue),
+                                    shape = RoundedCornerShape(12.dp),
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(44.dp)
+                                        .testTag("open_dana_withdrawal_from_wallet_button")
+                                ) {
+                                    Text(
+                                        text = "💸 Tarik Saldo Koin / Hasil Sawer ke DANA (0% Potongan)",
+                                        color = DanaBlue,
+                                        fontSize = 11.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
+
+                                Spacer(modifier = Modifier.height(14.dp))
+
+                                // Kalkulator & Informasi Tarif Interaksi Penggemar (@ Rp 0,05)
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clip(RoundedCornerShape(12.dp))
+                                        .background(DarkSurfaceElevated)
+                                        .border(1.dp, TikTokCyan.copy(alpha = 0.35f), RoundedCornerShape(12.dp))
+                                        .padding(12.dp)
+                                ) {
+                                    Column {
+                                        Row(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            horizontalArrangement = Arrangement.SpaceBetween,
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                                Text(text = "💎", fontSize = 14.sp)
+                                                Spacer(modifier = Modifier.width(6.dp))
+                                                Text(
+                                                    text = "Tarif Interaksi Penggemar",
+                                                    color = TikTokCyan,
+                                                    fontSize = 12.sp,
+                                                    fontWeight = FontWeight.Bold
+                                                )
+                                            }
+                                            Text(
+                                                text = "Rp 0,05 / aksi",
+                                                color = TikTokYellow,
+                                                fontSize = 11.sp,
+                                                fontWeight = FontWeight.Bold,
+                                                modifier = Modifier
+                                                    .clip(RoundedCornerShape(6.dp))
+                                                    .background(TikTokYellow.copy(alpha = 0.15f))
+                                                    .padding(horizontal = 6.dp, vertical = 2.dp)
+                                            )
+                                        }
+
+                                        Spacer(modifier = Modifier.height(6.dp))
+
+                                        Text(
+                                            text = "Setiap aktivitas penggemar (Share, Like, Komen, Simpan) mempunyai harga Rp 0,05:",
+                                            color = TextSecondary,
+                                            fontSize = 11.sp,
+                                            lineHeight = 15.sp
+                                        )
+
+                                        Spacer(modifier = Modifier.height(8.dp))
+
+                                        Column(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .clip(RoundedCornerShape(8.dp))
+                                                .background(DarkCard)
+                                                .padding(8.dp),
+                                            verticalArrangement = Arrangement.spacedBy(4.dp)
+                                        ) {
+                                            Row(
+                                                modifier = Modifier.fillMaxWidth(),
+                                                horizontalArrangement = Arrangement.SpaceBetween
+                                            ) {
+                                                Text("❤️ Suka (Like) Penggemar:", color = TextMuted, fontSize = 10.sp)
+                                                Text("Rp 0,05 / like", color = TextPrimary, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                                            }
+                                            Row(
+                                                modifier = Modifier.fillMaxWidth(),
+                                                horizontalArrangement = Arrangement.SpaceBetween
+                                            ) {
+                                                Text("💬 Komentar Penggemar:", color = TextMuted, fontSize = 10.sp)
+                                                Text("Rp 0,05 / komen", color = TextPrimary, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                                            }
+                                            Row(
+                                                modifier = Modifier.fillMaxWidth(),
+                                                horizontalArrangement = Arrangement.SpaceBetween
+                                            ) {
+                                                Text("↗️ Bagikan (Share) Penggemar:", color = TextMuted, fontSize = 10.sp)
+                                                Text("Rp 0,05 / share", color = TextPrimary, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                                            }
+                                            Row(
+                                                modifier = Modifier.fillMaxWidth(),
+                                                horizontalArrangement = Arrangement.SpaceBetween
+                                            ) {
+                                                Text("🔖 Simpan (Bookmark) Penggemar:", color = TextMuted, fontSize = 10.sp)
+                                                Text("Rp 0,05 / simpan", color = TextPrimary, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                                            }
+                                            Row(
+                                                modifier = Modifier.fillMaxWidth(),
+                                                horizontalArrangement = Arrangement.SpaceBetween
+                                            ) {
+                                                Text("➕ Ikuti (Follow) Penggemar:", color = TextMuted, fontSize = 10.sp)
+                                                Text("Rp 0,05 / follow", color = TextPrimary, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                                            }
+                                        }
+
+                                        Spacer(modifier = Modifier.height(8.dp))
+
+                                        Text(
+                                            text = "💡 Contoh: 1.000 aksi penggemar = Rp 50,00 • 20.000 aksi = Rp 1.000,00",
+                                            color = TikTokCyan,
+                                            fontSize = 10.sp,
+                                            fontWeight = FontWeight.Medium
+                                        )
+                                    }
+                                }
+                            }
+                        }
+
+                        1 -> {
                             // Konversi Mandiri / Self Recharge packages
                             Column {
                                 Text(
@@ -452,7 +863,7 @@ fun VibeCoinWalletDialog(
                             }
                         }
 
-                        1 -> {
+                        2 -> {
                             // Klaim Harian & Kode Hadiah Mandiri
                             Column(
                                 modifier = Modifier
@@ -579,7 +990,7 @@ fun VibeCoinWalletDialog(
                             }
                         }
 
-                        2 -> {
+                        3 -> {
                             // History of Coin Transactions
                             if (transactions.isEmpty()) {
                                 Box(
@@ -638,7 +1049,7 @@ fun VibeCoinWalletDialog(
                             }
                         }
 
-                        3 -> {
+                        4 -> {
                             // Prinsip Operasional Bebas Birokrasi & P2P
                             Column(
                                 modifier = Modifier

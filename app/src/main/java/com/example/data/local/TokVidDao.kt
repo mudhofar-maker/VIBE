@@ -38,6 +38,12 @@ interface TokVidDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertCreatedVideo(video: CreatedVideoEntity)
 
+    @Query("DELETE FROM created_videos WHERE id = :videoId")
+    suspend fun deleteCreatedVideo(videoId: String)
+
+    @Query("UPDATE created_videos SET caption = :newCaption, tags = :newTags WHERE id = :videoId")
+    suspend fun updateCreatedVideo(videoId: String, newCaption: String, newTags: String)
+
     // User DANA Profile
     @Query("SELECT * FROM user_dana_profile WHERE id = 'primary_user_dana' LIMIT 1")
     fun getUserDanaProfile(): Flow<UserDanaProfileEntity?>

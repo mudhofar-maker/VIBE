@@ -4,8 +4,18 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.data.local.TokVidDatabase
+import com.example.data.model.CoinConversionCalculation
 import com.example.data.model.CommentItem
+import com.example.data.model.DanaWithdrawalResult
+import com.example.data.model.ContentFilterType
+import com.example.data.model.CreatorEarningsSummary
+import com.example.data.model.CreatorPerformanceSummary
+import com.example.data.model.CreatorTimeRange
+import com.example.data.model.DailyMetricPoint
+import com.example.data.model.FanInteractionEconomics
 import com.example.data.model.NotificationItem
+import com.example.data.model.UserDanaProfile
+import com.example.data.model.VibeGift
 import com.example.data.model.VideoItem
 import com.example.data.repository.VideoRepository
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -16,6 +26,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -24,7 +35,7 @@ enum class FeedTab {
 }
 
 enum class NavigationTab {
-    HOME, SHORTS, DISCOVER, CREATE, INBOX, PROFILE, WATCH
+    HOME, SHORTS, DISCOVER, CREATE, INBOX, PROFILE, WATCH, CREATOR_DASHBOARD
 }
 
 class MainViewModel(application: Application) : AndroidViewModel(application) {
@@ -77,6 +88,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private val _isPolicyDialogOpen = MutableStateFlow(false)
     val isPolicyDialogOpen: StateFlow<Boolean> = _isPolicyDialogOpen.asStateFlow()
 
+    private val _isWithdrawalDialogOpen = MutableStateFlow(false)
+    val isWithdrawalDialogOpen: StateFlow<Boolean> = _isWithdrawalDialogOpen.asStateFlow()
+
     private val _activeGiftAnimation = MutableStateFlow<com.example.data.model.VibeGiftAnimation?>(null)
     val activeGiftAnimation: StateFlow<com.example.data.model.VibeGiftAnimation?> = _activeGiftAnimation.asStateFlow()
 
@@ -116,6 +130,130 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             }
         }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    // Creator Dashboard States
+    private val _creatorTimeRange = MutableStateFlow(CreatorTimeRange.LAST_7_DAYS)
+    val creatorTimeRange: StateFlow<CreatorTimeRange> = _creatorTimeRange.asStateFlow()
+
+    private val _contentFilter = MutableStateFlow(ContentFilterType.ALL)
+    val contentFilter: StateFlow<ContentFilterType> = _contentFilter.asStateFlow()
+
+    private val _contentSearchQuery = MutableStateFlow("")
+    val contentSearchQuery: StateFlow<String> = _contentSearchQuery.asStateFlow()
+
+    val creatorVideos: StateFlow<List<VideoItem>> = combine(
+        allVideos,
+        _contentFilter,
+        _contentSearchQuery
+    ) { videos, filter, query ->
+        val creatorOwned = videos.filter { it.isUserCreated || it.creatorUsername == "@saya" }
+        val sourceList = if (creatorOwned.isNotEmpty()) creatorOwned else videos.take(8)
+
+        sourceList.filter { video ->
+            val matchesFilter = when (filter) {
+                ContentFilterType.ALL -> true
+                ContentFilterType.SHORTS -> !video.isLongVideo
+                ContentFilterType.LONG_VIDEO -> video.isLongVideo
+            }
+            val matchesQuery = query.isBlank() ||
+                video.caption.contains(query, ignoreCase = true) ||
+                video.category.contains(query, ignoreCase = true) ||
+                video.tags.any { it.contains(query, ignoreCase = true) }
+
+            matchesFilter && matchesQuery
+        }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    val creatorEarningsSummary: StateFlow<CreatorEarningsSummary> = combine(
+        userDanaProfile,
+        userCoinBalance,
+        allVideos,
+        _creatorTimeRange
+    ) { profile, coins, videos, range ->
+        val sawerDirect = profile?.sawerBalanceRupiah ?: 175_000.0
+        val creatorOwned = videos.filter { it.isUserCreated || it.creatorUsername == "@saya" }
+        val effectiveVideos = if (creatorOwned.isNotEmpty()) creatorOwned else videos.take(8)
+        val totalInteractions = effectiveVideos.sumOf { it.totalFanInteractionsCount } + 1850L
+        val fanRoyalty = totalInteractions * FanInteractionEconomics.PRICE_PER_INTERACTION_RUPIAH
+        val coinGiftValue = (coins * 8000.0).coerceAtLeast(40_000.0)
+
+        val rangeMultiplier = when (range) {
+            CreatorTimeRange.LAST_7_DAYS -> 0.45
+            CreatorTimeRange.LAST_30_DAYS -> 0.85
+            CreatorTimeRange.ALL_TIME -> 1.0
+        }
+
+        val totalGross = (sawerDirect + fanRoyalty + coinGiftValue) * rangeMultiplier
+        val directSawerSegment = sawerDirect * rangeMultiplier
+        val fanRoyaltySegment = fanRoyalty * rangeMultiplier
+        val coinGiftSegment = coinGiftValue * rangeMultiplier
+
+        CreatorEarningsSummary(
+            totalEarningsRupiah = totalGross,
+            directSawerRupiah = directSawerSegment,
+            fanRoyaltyRupiah = fanRoyaltySegment,
+            coinGiftRupiah = coinGiftSegment,
+            withdrawableRupiah = sawerDirect,
+            growthRatePercent = if (range == CreatorTimeRange.LAST_7_DAYS) 24.8 else 18.5,
+            totalSawerTransactions = profile?.totalDirectSawerCount ?: 14L
+        )
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), CreatorEarningsSummary(245_000.0, 175_000.0, 30_000.0, 40_000.0, 175_000.0))
+
+    val thirtyDayEarningsTrend: StateFlow<com.example.data.model.ThirtyDayEarningsTrend> = userDanaProfile.map { profile ->
+        com.example.data.model.ThirtyDayEarningsTrend.generateDefault(profile?.sawerBalanceRupiah ?: 175_000.0)
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), com.example.data.model.ThirtyDayEarningsTrend.generateDefault())
+
+    val creatorPerformanceSummary: StateFlow<CreatorPerformanceSummary> = combine(
+        allVideos,
+        _creatorTimeRange
+    ) { videos, range ->
+        val creatorOwned = videos.filter { it.isUserCreated || it.creatorUsername == "@saya" }
+        val effectiveVideos = if (creatorOwned.isNotEmpty()) creatorOwned else videos.take(8)
+
+        val totalViews = effectiveVideos.sumOf { it.viewsCount } + 12_400L
+        val totalLikes = effectiveVideos.sumOf { it.likesCount } + 1_820L
+        val totalComments = effectiveVideos.sumOf { it.commentsCount } + 340L
+        val totalShares = effectiveVideos.sumOf { it.sharesCount } + 210L
+        val totalBookmarks = effectiveVideos.sumOf { it.bookmarksCount } + 450L
+        val totalEngagement = totalLikes + totalComments + totalShares + totalBookmarks
+        val engRate = if (totalViews > 0) (totalEngagement.toDouble() / totalViews.toDouble()) * 100.0 else 8.4
+
+        val dailyTrend = when (range) {
+            CreatorTimeRange.LAST_7_DAYS -> listOf(
+                DailyMetricPoint("Sen", 1820L, 25000.0, 142L),
+                DailyMetricPoint("Sel", 2400L, 35000.0, 198L),
+                DailyMetricPoint("Rab", 3100L, 42000.0, 260L),
+                DailyMetricPoint("Kam", 2890L, 38000.0, 215L),
+                DailyMetricPoint("Jum", 4200L, 55000.0, 380L),
+                DailyMetricPoint("Sab", 5600L, 72000.0, 490L),
+                DailyMetricPoint("Min", 6100L, 85000.0, 560L)
+            )
+            CreatorTimeRange.LAST_30_DAYS -> listOf(
+                DailyMetricPoint("Mgg 1", 14200L, 180000.0, 1200L),
+                DailyMetricPoint("Mgg 2", 18900L, 240000.0, 1650L),
+                DailyMetricPoint("Mgg 3", 22400L, 310000.0, 2100L),
+                DailyMetricPoint("Mgg 4", 28100L, 395000.0, 2750L)
+            )
+            CreatorTimeRange.ALL_TIME -> listOf(
+                DailyMetricPoint("Jan", 45000L, 620000.0, 4200L),
+                DailyMetricPoint("Feb", 68000L, 890000.0, 6100L),
+                DailyMetricPoint("Mar", 92000L, 1250000.0, 8900L),
+                DailyMetricPoint("Apr", 134000L, 1850000.0, 12400L)
+            )
+        }
+
+        CreatorPerformanceSummary(
+            totalViews = (totalViews * if (range == CreatorTimeRange.LAST_7_DAYS) 0.35 else 1.0).toLong(),
+            totalLikes = (totalLikes * if (range == CreatorTimeRange.LAST_7_DAYS) 0.35 else 1.0).toLong(),
+            totalComments = (totalComments * if (range == CreatorTimeRange.LAST_7_DAYS) 0.35 else 1.0).toLong(),
+            totalShares = (totalShares * if (range == CreatorTimeRange.LAST_7_DAYS) 0.35 else 1.0).toLong(),
+            totalBookmarks = (totalBookmarks * if (range == CreatorTimeRange.LAST_7_DAYS) 0.35 else 1.0).toLong(),
+            engagementRate = engRate,
+            avgWatchTimeSeconds = 54,
+            totalFollowers = 1842L,
+            dailyTrends = dailyTrend
+        )
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), CreatorPerformanceSummary(28000L, 3400L, 520L, 310L, 680L, 9.2))
 
     @OptIn(ExperimentalCoroutinesApi::class)
     val activeComments: StateFlow<List<CommentItem>> = _selectedVideoForComments.flatMapLatest { video ->
@@ -186,7 +324,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             repository.toggleBookmark(video)
             if (!video.isBookmarked) {
-                repository.rewardCoinForInteraction("Reward simpan video ${video.creatorUsername}", 5L)
+                incrementCoinsForBookmark(5L)
             }
         }
     }
@@ -194,6 +332,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     fun toggleFollow(creatorUsername: String, currentStatus: Boolean) {
         viewModelScope.launch {
             repository.toggleFollow(creatorUsername, currentStatus)
+            if (!currentStatus) {
+                incrementCoinsForFollow(creatorUsername, 5L)
+            }
         }
     }
 
@@ -259,17 +400,93 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         _isPolicyDialogOpen.value = false
     }
 
-    fun sendGift(video: VideoItem, gift: com.example.data.model.VibeGift) {
+    fun openWithdrawalDialog() {
+        _isWithdrawalDialogOpen.value = true
+    }
+
+    fun closeWithdrawalDialog() {
+        _isWithdrawalDialogOpen.value = false
+    }
+
+    fun withdrawFromSawerBalanceToDana(
+        amountRupiah: Double,
+        targetPhone: String,
+        targetName: String,
+        onResult: (DanaWithdrawalResult) -> Unit
+    ) {
         viewModelScope.launch {
-            val success = repository.spendCoinsForGift(gift, video.creatorName)
+            val result = repository.withdrawFromSawerBalanceToDana(amountRupiah, targetPhone, targetName)
+            onResult(result)
+        }
+    }
+
+    fun withdrawCoinsToDana(
+        coinCount: Long,
+        targetPhone: String,
+        targetName: String,
+        onResult: (DanaWithdrawalResult) -> Unit
+    ) {
+        viewModelScope.launch {
+            val result = repository.withdrawCoinsToDana(coinCount, targetPhone, targetName)
+            onResult(result)
+        }
+    }
+
+    fun sendGift(video: VideoItem, gift: VibeGift) {
+        viewModelScope.launch {
+            decrementCoinsForGift(gift, video.creatorName)
+        }
+    }
+
+    fun decrementCoinsForGift(gift: VibeGift, creatorName: String, onResult: ((Boolean) -> Unit)? = null) {
+        viewModelScope.launch {
+            val success = repository.decrementCoinsForGift(gift, creatorName)
             if (success) {
                 _activeGiftAnimation.value = com.example.data.model.VibeGiftAnimation(
                     id = "anim_${System.currentTimeMillis()}",
                     gift = gift,
                     senderName = "@saya",
-                    receiverName = video.creatorName
+                    receiverName = creatorName
                 )
             }
+            onResult?.invoke(success)
+        }
+    }
+
+    fun incrementCoinsForLike(creatorUsername: String, amount: Long = 5L) {
+        viewModelScope.launch {
+            repository.incrementCoinsForLike(creatorUsername, amount)
+        }
+    }
+
+    fun incrementCoinsForComment(amount: Long = 10L) {
+        viewModelScope.launch {
+            repository.incrementCoinsForComment(amount)
+        }
+    }
+
+    fun incrementCoinsForShare(targetOrCreator: String, amount: Long = 15L) {
+        viewModelScope.launch {
+            repository.incrementCoinsForShare(targetOrCreator, amount)
+        }
+    }
+
+    fun incrementCoinsForBookmark(amount: Long = 5L) {
+        viewModelScope.launch {
+            repository.incrementCoinsForBookmark(amount)
+        }
+    }
+
+    fun incrementCoinsForFollow(creatorUsername: String, amount: Long = 5L) {
+        viewModelScope.launch {
+            repository.incrementCoinsForFollow(creatorUsername, amount)
+        }
+    }
+
+    fun convertCoins(coinCount: Long, onResult: ((CoinConversionCalculation) -> Unit)? = null) {
+        viewModelScope.launch {
+            val calculation = repository.convertCoinsWithPlatformFee(coinCount)
+            onResult?.invoke(calculation)
         }
     }
 
@@ -330,6 +547,30 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             repository.createVideo(caption, tags, soundTitle, category, isLongVideo, durationFormatted, videoUrl, thumbnailUrl)
             _currentNavTab.value = if (isLongVideo) NavigationTab.HOME else NavigationTab.SHORTS
             _feedTab.value = FeedTab.FOR_YOU
+        }
+    }
+
+    fun setCreatorTimeRange(range: CreatorTimeRange) {
+        _creatorTimeRange.value = range
+    }
+
+    fun setContentFilter(filter: ContentFilterType) {
+        _contentFilter.value = filter
+    }
+
+    fun setContentSearchQuery(query: String) {
+        _contentSearchQuery.value = query
+    }
+
+    fun deleteVideo(videoId: String) {
+        viewModelScope.launch {
+            repository.deleteVideo(videoId)
+        }
+    }
+
+    fun updateVideo(videoId: String, newCaption: String, newTags: List<String>) {
+        viewModelScope.launch {
+            repository.updateVideo(videoId, newCaption, newTags)
         }
     }
 }

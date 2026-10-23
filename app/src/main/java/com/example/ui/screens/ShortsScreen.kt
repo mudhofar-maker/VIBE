@@ -650,7 +650,29 @@ private fun BottomShortsInfo(
             maxLines = 3
         )
 
-        Spacer(modifier = Modifier.height(10.dp))
+        Spacer(modifier = Modifier.height(6.dp))
+
+        // Fan Interaction Rate Badge (@ Rp 0,05)
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .clip(RoundedCornerShape(6.dp))
+                .background(Color(0x88000000))
+                .border(0.8.dp, TikTokCyan.copy(alpha = 0.5f), RoundedCornerShape(6.dp))
+                .clickable { onCreatorClick() }
+                .padding(horizontal = 6.dp, vertical = 2.dp)
+        ) {
+            Text(text = "💎", fontSize = 10.sp)
+            Spacer(modifier = Modifier.width(4.dp))
+            Text(
+                text = "Interaksi Penggemar: Rp 0,05 / aksi (Like, Komen, Share, Simpan)",
+                color = TikTokCyan,
+                fontSize = 10.sp,
+                fontWeight = FontWeight.SemiBold
+            )
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
 
         // Sound Track Bar
         Row(

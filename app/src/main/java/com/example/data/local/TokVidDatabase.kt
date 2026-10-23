@@ -15,7 +15,7 @@ import androidx.room.RoomDatabase
         UserCoinWalletEntity::class,
         CoinTransactionEntity::class
     ],
-    version = 3,
+    version = 4,
     exportSchema = false
 )
 abstract class TokVidDatabase : RoomDatabase() {

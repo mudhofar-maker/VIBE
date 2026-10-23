@@ -39,7 +39,19 @@ data class UserDanaProfile(
     val qrCustomImageUrl: String? = null,
     val notes: String = "Saweran langsung P2P ke akun DANA saya tanpa potongan!",
     val isDanaActive: Boolean = true,
-    val totalDirectSawerCount: Long = 14
+    val totalDirectSawerCount: Long = 14,
+    val sawerBalanceRupiah: Double = 175_000.0
+)
+
+data class DanaWithdrawalResult(
+    val isSuccess: Boolean,
+    val amountRupiah: Double,
+    val targetPhoneNumber: String,
+    val targetAccountName: String,
+    val remainingBalanceRupiah: Double,
+    val transactionId: String,
+    val timestamp: Long = System.currentTimeMillis(),
+    val message: String
 )
 
 data class CreatorDanaProfile(
@@ -68,3 +80,60 @@ data class SelfRechargePackage(
     val label: String,
     val badge: String = ""
 )
+
+data class CoinConversionCalculation(
+    val coinCount: Long,
+    val coinValuePerUnit: Long = 8_000L,
+    val userPricePerUnit: Long = 10_000L,
+    val ownerMarginPerUnit: Long = 2_000L
+) {
+    val totalUserPayment: Long get() = coinCount * userPricePerUnit
+    val totalCoinValue: Long get() = coinCount * coinValuePerUnit
+    val totalOwnerProfit: Long get() = coinCount * ownerMarginPerUnit
+}
+
+object FanInteractionEconomics {
+    const val PRICE_PER_INTERACTION_RUPIAH: Double = 0.05 // Rp 0.05 per aksi penggemar
+    const val LIKE_PRICE_RUPIAH: Double = 0.05
+    const val COMMENT_PRICE_RUPIAH: Double = 0.05
+    const val SHARE_PRICE_RUPIAH: Double = 0.05
+    const val BOOKMARK_PRICE_RUPIAH: Double = 0.05
+    const val FOLLOW_PRICE_RUPIAH: Double = 0.05
+
+    fun calculateRupiah(interactionsCount: Long): Double {
+        return interactionsCount * PRICE_PER_INTERACTION_RUPIAH
+    }
+
+    fun calculateFromBreakdown(
+        likes: Long,
+        comments: Long,
+        shares: Long,
+        bookmarks: Long
+    ): Double {
+        return (likes + comments + shares + bookmarks) * PRICE_PER_INTERACTION_RUPIAH
+    }
+
+    fun formatRupiah(amount: Double): String {
+        return String.format(java.util.Locale("id", "ID"), "Rp %.2f", amount)
+    }
+
+    fun formatInteractionPrice(): String = "Rp 0,05"
+}
+
+data class FanInteractionReport(
+    val likesCount: Long = 0,
+    val commentsCount: Long = 0,
+    val sharesCount: Long = 0,
+    val bookmarksCount: Long = 0,
+    val followsCount: Long = 0
+) {
+    val totalInteractions: Long
+        get() = likesCount + commentsCount + sharesCount + bookmarksCount + followsCount
+
+    val totalRupiahValue: Double
+        get() = totalInteractions * FanInteractionEconomics.PRICE_PER_INTERACTION_RUPIAH
+
+    val formattedTotalRupiah: String
+        get() = FanInteractionEconomics.formatRupiah(totalRupiahValue)
+}
+

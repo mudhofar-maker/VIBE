@@ -58,6 +58,7 @@ import com.example.ui.theme.TikTokRed
 fun ShareBottomSheet(
     sheetState: SheetState,
     video: VideoItem,
+    onShareAction: (() -> Unit)? = null,
     onDismiss: () -> Unit
 ) {
     val context = LocalContext.current
@@ -128,6 +129,7 @@ fun ShareBottomSheet(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         modifier = Modifier
                             .clickable {
+                                onShareAction?.invoke()
                                 Toast.makeText(context, "Terkirim ke ${friend.first}!", Toast.LENGTH_SHORT).show()
                                 onDismiss()
                             }
@@ -185,6 +187,7 @@ fun ShareBottomSheet(
                         val clip = ClipData.newPlainText("MyFlix Link", "https://myflix.app/v/${video.id}")
                         val cm = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
                         cm.setPrimaryClip(clip)
+                        onShareAction?.invoke()
                         Toast.makeText(context, "Tautan berhasil disalin!", Toast.LENGTH_SHORT).show()
                         onDismiss()
                     }
@@ -195,6 +198,7 @@ fun ShareBottomSheet(
                     label = "WhatsApp",
                     backgroundColor = Color(0xFF25D366),
                     onClick = {
+                        onShareAction?.invoke()
                         Toast.makeText(context, "Membuka WhatsApp...", Toast.LENGTH_SHORT).show()
                         onDismiss()
                     }

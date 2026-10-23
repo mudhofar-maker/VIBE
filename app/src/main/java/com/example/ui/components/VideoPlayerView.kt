@@ -51,6 +51,8 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
+import com.example.ui.theme.TikTokCyan
+import com.example.ui.theme.TikTokRed
 import java.util.Locale
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -298,10 +300,6 @@ fun VideoPlayerView(
                     .clip(RoundedCornerShape(20.dp))
                     .background(Color(0xDD0A0A0C))
                     .border(1.dp, TikTokCyan.copy(alpha = 0.8f), RoundedCornerShape(20.dp))
-                    .clickable {
-                        zoomScale = 1f
-                        panOffset = Offset.Zero
-                    }
                     .padding(horizontal = 10.dp, vertical = 5.dp)
             ) {
                 Icon(
@@ -317,12 +315,48 @@ fun VideoPlayerView(
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold
                 )
-                Spacer(modifier = Modifier.width(8.dp))
+                Spacer(modifier = Modifier.width(6.dp))
+
+                // Emulator / Click Zoom In (+)
+                Text(
+                    text = "+",
+                    color = if (zoomScale < 4.5f) TikTokCyan else Color.Gray,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.ExtraBold,
+                    modifier = Modifier
+                        .clickable(enabled = zoomScale < 4.5f) {
+                            zoomScale = (zoomScale + 0.5f).coerceAtMost(4.5f)
+                        }
+                        .padding(horizontal = 6.dp)
+                )
+
+                // Emulator / Click Zoom Out (-)
+                Text(
+                    text = "−",
+                    color = if (zoomScale > 1f) TikTokCyan else Color.Gray,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.ExtraBold,
+                    modifier = Modifier
+                        .clickable(enabled = zoomScale > 1f) {
+                            val s = (zoomScale - 0.5f).coerceAtLeast(1f)
+                            zoomScale = s
+                            if (s == 1f) panOffset = Offset.Zero
+                        }
+                        .padding(horizontal = 6.dp)
+                )
+
+                Spacer(modifier = Modifier.width(4.dp))
                 Text(
                     text = "Reset",
-                    color = TikTokCyan,
+                    color = TikTokRed,
                     fontSize = 11.sp,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier
+                        .clickable {
+                            zoomScale = 1f
+                            panOffset = Offset.Zero
+                        }
+                        .padding(horizontal = 4.dp)
                 )
             }
         }

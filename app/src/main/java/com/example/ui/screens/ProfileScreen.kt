@@ -33,6 +33,7 @@ import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Verified
 import androidx.compose.material.icons.filled.VideoLibrary
 import androidx.compose.material.icons.filled.AccountBalanceWallet
+import androidx.compose.material.icons.filled.Analytics
 import androidx.compose.material.icons.filled.Policy
 import androidx.compose.material.icons.filled.QrCode2
 import androidx.compose.material.icons.filled.Shield
@@ -85,7 +86,9 @@ fun ProfileScreen(
     onVideoClick: (VideoItem) -> Unit,
     onOpenDanaEtalase: () -> Unit = {},
     onOpenWallet: () -> Unit = {},
-    onOpenPolicy: () -> Unit = {}
+    onOpenPolicy: () -> Unit = {},
+    onOpenWithdrawal: () -> Unit = {},
+    onOpenCreatorDashboard: () -> Unit = {}
 ) {
     val context = LocalContext.current
     var selectedTabIndex by remember { mutableIntStateOf(0) }
@@ -253,6 +256,79 @@ fun ProfileScreen(
 
             Spacer(modifier = Modifier.height(14.dp))
 
+            // --- DASHBOARD KREATOR STUDIO BANNER ---
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(
+                        androidx.compose.ui.graphics.Brush.horizontalGradient(
+                            listOf(
+                                Color(0xFF2C1930),
+                                Color(0xFF132238)
+                            )
+                        )
+                    )
+                    .border(1.dp, TikTokCyan.copy(alpha = 0.5f), RoundedCornerShape(16.dp))
+                    .clickable { onOpenCreatorDashboard() }
+                    .padding(14.dp)
+                    .testTag("profile_creator_dashboard_card")
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Box(
+                            modifier = Modifier
+                                .size(40.dp)
+                                .clip(RoundedCornerShape(10.dp))
+                                .background(TikTokCyan.copy(alpha = 0.2f)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(text = "🎨", fontSize = 20.sp)
+                        }
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Column {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(
+                                    text = "Studio & Dashboard Kreator",
+                                    color = TextPrimary,
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text(
+                                    text = "PRO",
+                                    color = TikTokYellow,
+                                    fontSize = 9.sp,
+                                    fontWeight = FontWeight.ExtraBold,
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(4.dp))
+                                        .background(TikTokYellow.copy(alpha = 0.15f))
+                                        .padding(horizontal = 4.dp, vertical = 1.dp)
+                                )
+                            }
+                            Text(
+                                text = "Pantau saldo, analisis performa, & kelola konten",
+                                color = TextMuted,
+                                fontSize = 11.sp
+                            )
+                        }
+                    }
+
+                    Icon(
+                        imageVector = Icons.Default.Analytics,
+                        contentDescription = "Buka Dashboard",
+                        tint = TikTokCyan,
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(10.dp))
+
             // --- ETALASE BARCODE DANA PRIBADI (P2P DIRECT) ---
             Box(
                 modifier = Modifier
@@ -314,19 +390,71 @@ fun ProfileScreen(
                             }
                         }
 
-                        Button(
-                            onClick = onOpenDanaEtalase,
-                            colors = ButtonDefaults.buttonColors(containerColor = DanaBlue),
-                            shape = RoundedCornerShape(10.dp),
-                            modifier = Modifier
-                                .height(34.dp)
-                                .testTag("manage_dana_barcode_button")
-                        ) {
-                            Text("Atur Barcode", color = Color.White, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                            Button(
+                                onClick = onOpenDanaEtalase,
+                                colors = ButtonDefaults.buttonColors(containerColor = DarkSurface),
+                                border = androidx.compose.foundation.BorderStroke(1.dp, DanaBlue),
+                                shape = RoundedCornerShape(10.dp),
+                                modifier = Modifier
+                                    .height(34.dp)
+                                    .testTag("manage_dana_barcode_button")
+                            ) {
+                                Text("Atur Barcode", color = DanaBlue, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                            }
+
+                            Button(
+                                onClick = onOpenWithdrawal,
+                                colors = ButtonDefaults.buttonColors(containerColor = DanaBlue),
+                                shape = RoundedCornerShape(10.dp),
+                                modifier = Modifier
+                                    .height(34.dp)
+                                    .testTag("profile_withdraw_dana_button")
+                            ) {
+                                Text("💸 Tarik Saldo", color = Color.White, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                            }
                         }
                     }
 
                     Spacer(modifier = Modifier.height(10.dp))
+
+                    // Saldo Sawer & Apresiasi Terkumpul
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(10.dp))
+                            .background(DarkBackground.copy(alpha = 0.6f))
+                            .padding(horizontal = 10.dp, vertical = 8.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column {
+                                Text("Saldo Sawer Siap Tarik:", color = TextMuted, fontSize = 10.sp)
+                                Text(
+                                    "Rp " + java.text.NumberFormat.getNumberInstance(java.util.Locale("id", "ID")).format((userDanaProfile?.sawerBalanceRupiah ?: 175_000.0).toLong()),
+                                    color = Color(0xFF00C853),
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.ExtraBold
+                                )
+                            }
+
+                            Text(
+                                text = "Bebas Biaya Admin (0%)",
+                                color = TikTokYellow,
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(6.dp))
+                                    .background(TikTokYellow.copy(alpha = 0.12f))
+                                    .padding(horizontal = 6.dp, vertical = 2.dp)
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
 
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -416,6 +544,115 @@ fun ProfileScreen(
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(text = "0% Potongan", color = TextPrimary, fontSize = 13.sp, fontWeight = FontWeight.Bold)
                         Text(text = "Tanpa tahan uang", color = TextMuted, fontSize = 9.sp)
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            // --- ROYALTI INTERAKSI PENGGEMAR CARD (@ Rp 0,05) ---
+            val totalUserInteractions = userVideos.sumOf { it.totalFanInteractionsCount } + 1850L
+            val totalUserInteractionsRupiah = totalUserInteractions * 0.05
+
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(Color(0xFF131A26))
+                    .border(1.dp, TikTokCyan.copy(alpha = 0.4f), RoundedCornerShape(16.dp))
+                    .clickable { onOpenWallet() }
+                    .padding(14.dp)
+                    .testTag("profile_fan_interactions_card")
+            ) {
+                Column {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(text = "💎", fontSize = 16.sp)
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Column {
+                                Text(
+                                    text = "Royalti Interaksi Penggemar",
+                                    color = TextPrimary,
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                                Text(
+                                    text = "Like, Komen, Share, & Simpan",
+                                    color = TextMuted,
+                                    fontSize = 10.sp
+                                )
+                            }
+                        }
+                        Text(
+                            text = "Rp 0,05 / aksi",
+                            color = TikTokYellow,
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(6.dp))
+                                .background(TikTokYellow.copy(alpha = 0.15f))
+                                .padding(horizontal = 8.dp, vertical = 3.dp)
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column {
+                            Text(
+                                text = "Total Aksi Penggemar",
+                                color = TextMuted,
+                                fontSize = 10.sp
+                            )
+                            Text(
+                                text = "${VideoItem.formatCount(totalUserInteractions)} Aksi",
+                                color = TikTokCyan,
+                                fontSize = 15.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+
+                        Column(horizontalAlignment = Alignment.End) {
+                            Text(
+                                text = "Estimasi Nilai Apresiasi",
+                                color = TextMuted,
+                                fontSize = 10.sp
+                            )
+                            Text(
+                                text = String.format(java.util.Locale("id", "ID"), "Rp %.2f", totalUserInteractionsRupiah),
+                                color = TikTokYellow,
+                                fontSize = 15.sp,
+                                fontWeight = FontWeight.ExtraBold
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    Button(
+                        onClick = onOpenWithdrawal,
+                        colors = ButtonDefaults.buttonColors(containerColor = TikTokCyan.copy(alpha = 0.15f)),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, TikTokCyan.copy(alpha = 0.5f)),
+                        shape = RoundedCornerShape(10.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(36.dp)
+                            .testTag("withdraw_fan_interactions_button")
+                    ) {
+                        Text(
+                            text = "💸 Cairkan Apresiasi ke DANA (0% Potongan)",
+                            color = TikTokCyan,
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold
+                        )
                     }
                 }
             }

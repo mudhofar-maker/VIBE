@@ -50,7 +50,8 @@ data class UserDanaProfileEntity(
     val qrCustomImageUrl: String? = null,
     val notes: String = "Saweran langsung P2P ke akun DANA saya tanpa potongan admin aplikasi!",
     val isDanaActive: Boolean = true,
-    val totalDirectSawerCount: Long = 14L
+    val totalDirectSawerCount: Long = 14L,
+    val sawerBalanceRupiah: Double = 175_000.0
 )
 
 @Entity(tableName = "user_coin_wallet")

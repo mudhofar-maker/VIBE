@@ -4,6 +4,8 @@ import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.annotation.OptIn
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.background
@@ -145,6 +147,26 @@ fun LongVideoWatchScreen(
     var isDescriptionExpanded by remember { mutableStateOf(false) }
     var commentInput by remember { mutableStateOf("") }
 
+    // Pinch-to-zoom (Cubit layar) & Pan for long video player
+    var zoomScale by remember { mutableFloatStateOf(1f) }
+    var panOffset by remember { mutableStateOf(Offset.Zero) }
+    var containerSize by remember { mutableStateOf(IntSize.Zero) }
+
+    val transformableState = rememberTransformableState { zoomChange, panChange, _ ->
+        val newScale = (zoomScale * zoomChange).coerceIn(1f, 4f)
+        zoomScale = newScale
+        if (newScale > 1f) {
+            val maxPanX = if (containerSize.width > 0) (containerSize.width * (newScale - 1f)) / 2f else 400f
+            val maxPanY = if (containerSize.height > 0) (containerSize.height * (newScale - 1f)) / 2f else 300f
+            panOffset = Offset(
+                x = (panOffset.x + panChange.x).coerceIn(-maxPanX, maxPanX),
+                y = (panOffset.y + panChange.y).coerceIn(-maxPanY, maxPanY)
+            )
+        } else {
+            panOffset = Offset.Zero
+        }
+    }
+
     var exoPlayer by remember { mutableStateOf<ExoPlayer?>(null) }
 
     DisposableEffect(video.id) {
@@ -250,12 +272,14 @@ fun LongVideoWatchScreen(
             }
         }
 
-        // 16:9 VIDEO PLAYER WITH CUSTOM WEB-STYLE CONTROLS
+        // 16:9 VIDEO PLAYER WITH CUSTOM WEB-STYLE CONTROLS & PINCH-TO-ZOOM (CUBIT LAYAR)
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .aspectRatio(16f / 9f)
                 .background(Color.Black)
+                .onSizeChanged { containerSize = it }
+                .transformable(state = transformableState)
                 .clickable(
                     interactionSource = remember { MutableInteractionSource() },
                     indication = null
@@ -263,25 +287,122 @@ fun LongVideoWatchScreen(
                     showControls = !showControls
                 }
         ) {
-            // AndroidView ExoPlayer
-            if (exoPlayer != null) {
-                AndroidView(
-                    factory = { ctx ->
-                        PlayerView(ctx).apply {
-                            this.player = exoPlayer
-                            useController = false
-                            keepScreenOn = true
-                        }
-                    },
-                    modifier = Modifier.fillMaxSize()
-                )
-            } else {
-                AsyncImage(
-                    model = video.thumbnailUrl,
-                    contentDescription = video.caption,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.fillMaxSize()
-                )
+            // Pinch-zoomable canvas layer (Cubit Layar & Pan)
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .graphicsLayer {
+                        scaleX = zoomScale
+                        scaleY = zoomScale
+                        translationX = panOffset.x
+                        translationY = panOffset.y
+                    }
+            ) {
+                // AndroidView ExoPlayer
+                if (exoPlayer != null) {
+                    AndroidView(
+                        factory = { ctx ->
+                            PlayerView(ctx).apply {
+                                this.player = exoPlayer
+                                useController = false
+                                keepScreenOn = true
+                            }
+                        },
+                        modifier = Modifier.fillMaxSize()
+                    )
+                } else {
+                    AsyncImage(
+                        model = video.thumbnailUrl,
+                        contentDescription = video.caption,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                }
+            }
+
+            // Floating Pinch Zoom Indicator & Emulator Zoom Buttons (Cubit / Tombol Layar)
+            androidx.compose.animation.AnimatedVisibility(
+                visible = zoomScale > 1.05f || showControls,
+                enter = fadeIn(),
+                exit = fadeOut(),
+                modifier = Modifier
+                    .align(Alignment.TopStart)
+                    .padding(10.dp)
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(20.dp))
+                        .background(Color(0xDD0A0A0C))
+                        .border(1.dp, TikTokCyan.copy(alpha = 0.7f), RoundedCornerShape(20.dp))
+                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.ZoomIn,
+                        contentDescription = null,
+                        tint = TikTokCyan,
+                        modifier = Modifier.size(14.dp)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = "Cubit/Zoom: ${String.format(Locale.US, "%.1f", zoomScale)}x",
+                        color = Color.White,
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+
+                    // Emulator / Click Zoom In (+)
+                    Text(
+                        text = "+",
+                        color = if (zoomScale < 4f) TikTokCyan else TextMuted,
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(4.dp))
+                            .background(Color(0x3325F4EE))
+                            .clickable(enabled = zoomScale < 4f) {
+                                zoomScale = (zoomScale + 0.5f).coerceAtMost(4f)
+                            }
+                            .padding(horizontal = 6.dp, vertical = 1.dp)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+
+                    // Emulator / Click Zoom Out (-)
+                    Text(
+                        text = "−",
+                        color = if (zoomScale > 1f) TikTokCyan else TextMuted,
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(4.dp))
+                            .background(Color(0x3325F4EE))
+                            .clickable(enabled = zoomScale > 1f) {
+                                val s = (zoomScale - 0.5f).coerceAtLeast(1f)
+                                zoomScale = s
+                                if (s == 1f) panOffset = Offset.Zero
+                            }
+                            .padding(horizontal = 6.dp, vertical = 1.dp)
+                    )
+
+                    if (zoomScale > 1.05f) {
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = "Reset 1x",
+                            color = TikTokRed,
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(4.dp))
+                                .background(TikTokRed.copy(alpha = 0.15f))
+                                .clickable {
+                                    zoomScale = 1f
+                                    panOffset = Offset.Zero
+                                }
+                                .padding(horizontal = 6.dp, vertical = 2.dp)
+                        )
+                    }
+                }
             }
 
             // Buffering Spinner
@@ -594,7 +715,41 @@ fun LongVideoWatchScreen(
                     )
                 }
 
-                Spacer(modifier = Modifier.height(14.dp))
+                Spacer(modifier = Modifier.height(10.dp))
+
+                // Fan Interaction Monetization Info (@ Rp 0,05 per action)
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(Color(0xFF131A24))
+                        .border(1.dp, TikTokCyan.copy(alpha = 0.3f), RoundedCornerShape(8.dp))
+                        .padding(horizontal = 10.dp, vertical = 6.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text(text = "💎", fontSize = 12.sp)
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = "Apresiasi Penggemar: Rp 0,05 / aksi (Like, Komen, Share, Simpan)",
+                            color = TikTokCyan,
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
+                    Text(
+                        text = video.formattedFanInteractionValue(),
+                        color = TikTokYellow,
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
                 HorizontalDivider(color = DarkBorder, thickness = 0.5.dp)
                 Spacer(modifier = Modifier.height(14.dp))
 

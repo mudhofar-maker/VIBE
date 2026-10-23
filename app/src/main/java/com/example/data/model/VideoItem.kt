@@ -39,6 +39,15 @@ data class VideoItem(
     fun formattedShares(): String = formatCount(sharesCount)
     fun formattedViews(): String = formatCount(viewsCount)
 
+    val totalFanInteractionsCount: Long
+        get() = likesCount + commentsCount + bookmarksCount + sharesCount
+
+    val totalFanInteractionsRupiahValue: Double
+        get() = totalFanInteractionsCount * FanInteractionEconomics.PRICE_PER_INTERACTION_RUPIAH
+
+    fun formattedFanInteractionValue(): String =
+        FanInteractionEconomics.formatRupiah(totalFanInteractionsRupiahValue)
+
     companion object {
         fun formatCount(count: Long): String {
             return when {

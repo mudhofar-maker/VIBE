@@ -8,16 +8,20 @@ import com.example.data.local.UserCoinWalletEntity
 import com.example.data.local.UserCommentEntity
 import com.example.data.local.UserDanaProfileEntity
 import com.example.data.local.VideoInteractionEntity
+import com.example.data.model.CoinConversionCalculation
 import com.example.data.model.CommentItem
+import com.example.data.model.DanaWithdrawalResult
 import com.example.data.model.NotificationItem
 import com.example.data.model.NotificationType
 import com.example.data.model.UserDanaProfile
 import com.example.data.model.VibeGift
 import com.example.data.model.VideoItem
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
+import java.util.Locale
 import java.util.UUID
 
 class VideoRepository(private val dao: TokVidDao) {
@@ -254,61 +258,78 @@ class VideoRepository(private val dao: TokVidDao) {
         )
     )
 
+    private val deletedVideoIdsFlow = MutableStateFlow<Set<String>>(emptySet())
+    private val editedVideoCaptionsFlow = MutableStateFlow<Map<String, Pair<String, List<String>>>>(emptyMap())
+
     val allVideosFlow: Flow<List<VideoItem>> = combine(
         dao.getAllInteractions(),
         dao.getAllFollowedCreators(),
-        dao.getAllCreatedVideos()
-    ) { interactions, followed, createdVideos ->
+        dao.getAllCreatedVideos(),
+        deletedVideoIdsFlow,
+        editedVideoCaptionsFlow
+    ) { interactions, followed, createdVideos, deletedIds, editedCaptions ->
         val interactionMap = interactions.associateBy { it.videoId }
         val followSet = followed.map { it.creatorUsername }.toSet()
 
-        val customItems = createdVideos.map { created ->
-            val inter = interactionMap[created.id]
-            VideoItem(
-                id = created.id,
-                videoUrl = created.videoUrl,
-                thumbnailUrl = created.thumbnailUrl,
-                creatorUsername = "@saya",
-                creatorName = "Pengguna MyFlix",
-                creatorAvatar = "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200",
-                isVerified = true,
-                caption = created.caption,
-                tags = created.tags.split(" ").filter { it.isNotBlank() },
-                soundTitle = created.soundTitle,
-                soundAuthor = "@saya",
-                soundCoverUrl = "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=200",
-                likesCount = 12 + (inter?.extraLikesDelta ?: 0),
-                commentsCount = 0 + (inter?.extraCommentsDelta ?: 0),
-                bookmarksCount = 3,
-                sharesCount = 1,
-                isLiked = inter?.isLiked ?: false,
-                isBookmarked = inter?.isBookmarked ?: false,
-                isFollowing = false,
-                category = created.category,
-                isUserCreated = true,
-                isLongVideo = created.isLongVideo,
-                durationFormatted = created.durationFormatted,
-                viewsCount = 42L,
-                description = created.caption
-            )
-        }
+        val customItems = createdVideos
+            .filter { it.id !in deletedIds }
+            .map { created ->
+                val inter = interactionMap[created.id]
+                val edited = editedCaptions[created.id]
+                val caption = edited?.first ?: created.caption
+                val tags = edited?.second ?: created.tags.split(" ").filter { it.isNotBlank() }
+                VideoItem(
+                    id = created.id,
+                    videoUrl = created.videoUrl,
+                    thumbnailUrl = created.thumbnailUrl,
+                    creatorUsername = "@saya",
+                    creatorName = "Aldi Prasetya",
+                    creatorAvatar = "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200",
+                    isVerified = true,
+                    caption = caption,
+                    tags = tags,
+                    soundTitle = created.soundTitle,
+                    soundAuthor = "@saya",
+                    soundCoverUrl = "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=200",
+                    likesCount = 12 + (inter?.extraLikesDelta ?: 0),
+                    commentsCount = 0 + (inter?.extraCommentsDelta ?: 0),
+                    bookmarksCount = 3,
+                    sharesCount = 1,
+                    isLiked = inter?.isLiked ?: false,
+                    isBookmarked = inter?.isBookmarked ?: false,
+                    isFollowing = false,
+                    category = created.category,
+                    isUserCreated = true,
+                    isLongVideo = created.isLongVideo,
+                    durationFormatted = created.durationFormatted,
+                    viewsCount = 1420L,
+                    description = caption
+                )
+            }
 
-        val baseItems = seedVideos.map { seed ->
-            val inter = interactionMap[seed.id]
-            val isLiked = inter?.isLiked ?: false
-            val isBookmarked = inter?.isBookmarked ?: false
-            val extraLikes = inter?.extraLikesDelta ?: 0
-            val extraComments = inter?.extraCommentsDelta ?: 0
-            val isFollowing = followSet.contains(seed.creatorUsername)
+        val baseItems = seedVideos
+            .filter { it.id !in deletedIds }
+            .map { seed ->
+                val inter = interactionMap[seed.id]
+                val edited = editedCaptions[seed.id]
+                val caption = edited?.first ?: seed.caption
+                val tags = edited?.second ?: seed.tags
+                val isLiked = inter?.isLiked ?: false
+                val isBookmarked = inter?.isBookmarked ?: false
+                val extraLikes = inter?.extraLikesDelta ?: 0
+                val extraComments = inter?.extraCommentsDelta ?: 0
+                val isFollowing = followSet.contains(seed.creatorUsername)
 
-            seed.copy(
-                isLiked = isLiked,
-                isBookmarked = isBookmarked,
-                likesCount = seed.likesCount + extraLikes,
-                commentsCount = seed.commentsCount + extraComments,
-                isFollowing = isFollowing
-            )
-        }
+                seed.copy(
+                    caption = caption,
+                    tags = tags,
+                    isLiked = isLiked,
+                    isBookmarked = isBookmarked,
+                    likesCount = seed.likesCount + extraLikes,
+                    commentsCount = seed.commentsCount + extraComments,
+                    isFollowing = isFollowing
+                )
+            }
 
         // Newly created videos at the front
         customItems + baseItems
@@ -439,6 +460,16 @@ class VideoRepository(private val dao: TokVidDao) {
         )
     }
 
+    suspend fun deleteVideo(videoId: String) {
+        dao.deleteCreatedVideo(videoId)
+        deletedVideoIdsFlow.value = deletedVideoIdsFlow.value + videoId
+    }
+
+    suspend fun updateVideo(videoId: String, newCaption: String, newTags: List<String>) {
+        dao.updateCreatedVideo(videoId, newCaption, newTags.joinToString(" "))
+        editedVideoCaptionsFlow.value = editedVideoCaptionsFlow.value + (videoId to Pair(newCaption, newTags))
+    }
+
     fun getNotifications(): List<NotificationItem> {
         return listOf(
             NotificationItem(
@@ -489,7 +520,8 @@ class VideoRepository(private val dao: TokVidDao) {
                     qrCustomImageUrl = entity.qrCustomImageUrl,
                     notes = entity.notes,
                     isDanaActive = entity.isDanaActive,
-                    totalDirectSawerCount = entity.totalDirectSawerCount
+                    totalDirectSawerCount = entity.totalDirectSawerCount,
+                    sawerBalanceRupiah = entity.sawerBalanceRupiah
                 )
             } else {
                 UserDanaProfile(
@@ -499,7 +531,8 @@ class VideoRepository(private val dao: TokVidDao) {
                     qrCustomImageUrl = null,
                     notes = "Dukung karya konten saya! Saweran langsung P2P via DANA 100% tanpa potongan.",
                     isDanaActive = true,
-                    totalDirectSawerCount = 14
+                    totalDirectSawerCount = 14,
+                    sawerBalanceRupiah = 175_000.0
                 )
             }
         }
@@ -514,6 +547,7 @@ class VideoRepository(private val dao: TokVidDao) {
     ) {
         val current = dao.getUserDanaProfileSync()
         val count = current?.totalDirectSawerCount ?: 14L
+        val balance = current?.sawerBalanceRupiah ?: 175_000.0
         dao.upsertUserDanaProfile(
             UserDanaProfileEntity(
                 id = "primary_user_dana",
@@ -522,16 +556,122 @@ class VideoRepository(private val dao: TokVidDao) {
                 qrCustomImageUrl = qrImageUrl,
                 notes = notes,
                 isDanaActive = isActive,
-                totalDirectSawerCount = count
+                totalDirectSawerCount = count,
+                sawerBalanceRupiah = balance
             )
         )
     }
 
-    suspend fun incrementDirectSawerCount() {
+    suspend fun incrementDirectSawerCount(addedNominalRupiah: Double = 10_000.0) {
         val current = dao.getUserDanaProfileSync()
         if (current != null) {
-            dao.upsertUserDanaProfile(current.copy(totalDirectSawerCount = current.totalDirectSawerCount + 1))
+            dao.upsertUserDanaProfile(
+                current.copy(
+                    totalDirectSawerCount = current.totalDirectSawerCount + 1,
+                    sawerBalanceRupiah = current.sawerBalanceRupiah + addedNominalRupiah
+                )
+            )
         }
+    }
+
+    suspend fun withdrawFromSawerBalanceToDana(
+        amountRupiah: Double,
+        targetPhone: String,
+        targetName: String
+    ): DanaWithdrawalResult {
+        val current = dao.getUserDanaProfileSync()
+        val currentBalance = current?.sawerBalanceRupiah ?: 175_000.0
+        if (amountRupiah <= 0 || amountRupiah > currentBalance) {
+            return DanaWithdrawalResult(
+                isSuccess = false,
+                amountRupiah = amountRupiah,
+                targetPhoneNumber = targetPhone,
+                targetAccountName = targetName,
+                remainingBalanceRupiah = currentBalance,
+                transactionId = "",
+                message = "Saldo hasil sawer & apresiasi tidak mencukupi untuk penarikan ini."
+            )
+        }
+
+        val newBalance = currentBalance - amountRupiah
+        val updatedProfile = (current ?: UserDanaProfileEntity()).copy(
+            danaPhoneNumber = targetPhone,
+            danaAccountName = targetName,
+            sawerBalanceRupiah = newBalance
+        )
+        dao.upsertUserDanaProfile(updatedProfile)
+
+        val txId = "WD-DANA-${System.currentTimeMillis()}"
+        val formattedRupiah = String.format(Locale("id", "ID"), "Rp %,.0f", amountRupiah)
+
+        dao.insertCoinTransaction(
+            CoinTransactionEntity(
+                id = "tx_wd_${System.currentTimeMillis()}",
+                title = "Tarik ke DANA: $formattedRupiah",
+                amount = (amountRupiah / 8000.0).toLong().coerceAtLeast(1L),
+                isEarned = false,
+                description = "Pencairan hasil sawer & royalti apresiasi ke DANA $targetPhone a.n. $targetName (Biaya Admin: Rp 0)",
+                iconEmoji = "💸"
+            )
+        )
+
+        return DanaWithdrawalResult(
+            isSuccess = true,
+            amountRupiah = amountRupiah,
+            targetPhoneNumber = targetPhone,
+            targetAccountName = targetName,
+            remainingBalanceRupiah = newBalance,
+            transactionId = txId,
+            message = "Penarikan $formattedRupiah berhasil ditransfer ke akun DANA $targetPhone a.n. $targetName secara instan tanpa potongan."
+        )
+    }
+
+    suspend fun withdrawCoinsToDana(
+        coinCount: Long,
+        targetPhone: String,
+        targetName: String
+    ): DanaWithdrawalResult {
+        val wallet = dao.getUserCoinWalletSync()
+        val currentCoins = wallet?.balance ?: 500L
+        if (coinCount <= 0 || coinCount > currentCoins) {
+            return DanaWithdrawalResult(
+                isSuccess = false,
+                amountRupiah = (coinCount * 8000L).toDouble(),
+                targetPhoneNumber = targetPhone,
+                targetAccountName = targetName,
+                remainingBalanceRupiah = 0.0,
+                transactionId = "",
+                message = "Saldo koin tidak mencukupi untuk penarikan."
+            )
+        }
+
+        val amountRupiah = coinCount * 8000.0
+        val newCoinBalance = currentCoins - coinCount
+        dao.upsertCoinWallet(UserCoinWalletEntity("primary_coin_wallet", newCoinBalance))
+
+        val txId = "WD-COIN-${System.currentTimeMillis()}"
+        val formattedRupiah = String.format(Locale("id", "ID"), "Rp %,.0f", amountRupiah)
+
+        dao.insertCoinTransaction(
+            CoinTransactionEntity(
+                id = "tx_wd_coin_${System.currentTimeMillis()}",
+                title = "Tarik Koin ke DANA: -$coinCount Koin ($formattedRupiah)",
+                amount = coinCount,
+                isEarned = false,
+                description = "Pencairan $coinCount koin (@Rp 8.000) ke DANA $targetPhone a.n. $targetName (Biaya Admin: Rp 0)",
+                iconEmoji = "💸"
+            )
+        )
+
+        return DanaWithdrawalResult(
+            isSuccess = true,
+            amountRupiah = amountRupiah,
+            targetPhoneNumber = targetPhone,
+            targetAccountName = targetName,
+            remainingBalanceRupiah = newCoinBalance.toDouble(),
+            transactionId = txId,
+            message = "Pencairan $coinCount Koin ($formattedRupiah) berhasil ditransfer ke DANA $targetPhone secara instan!"
+        )
     }
 
     // --- VibeCoins Internal Currency System ---
@@ -664,5 +804,49 @@ class VideoRepository(private val dao: TokVidDao) {
                 iconEmoji = "✨"
             )
         )
+    }
+
+    suspend fun convertCoinsWithPlatformFee(coinCount: Long): CoinConversionCalculation {
+        val calc = CoinConversionCalculation(coinCount = coinCount)
+        val current = dao.getUserCoinWalletSync()
+        val currentBalance = current?.balance ?: 500L
+        val newBalance = currentBalance + coinCount
+
+        dao.upsertCoinWallet(UserCoinWalletEntity("primary_user_wallet", newBalance))
+        dao.insertCoinTransaction(
+            CoinTransactionEntity(
+                id = "tx_conv_${System.currentTimeMillis()}",
+                title = "Konversi Koin: +$coinCount Koin",
+                amount = coinCount,
+                isEarned = true,
+                description = "Nilai: Rp ${calc.totalCoinValue} | Bayar: Rp ${calc.totalUserPayment} | Profit Owner: Rp ${calc.totalOwnerProfit}",
+                iconEmoji = "💱"
+            )
+        )
+        return calc
+    }
+
+    suspend fun incrementCoinsForLike(creatorUsername: String, amount: Long = 5L) {
+        rewardCoinForInteraction("Like Penggemar (Tarif: Rp 0,05) ke $creatorUsername", amount)
+    }
+
+    suspend fun incrementCoinsForComment(amount: Long = 10L) {
+        rewardCoinForInteraction("Komentar Penggemar (Tarif: Rp 0,05) di video", amount)
+    }
+
+    suspend fun incrementCoinsForShare(targetOrCreator: String, amount: Long = 15L) {
+        rewardCoinForInteraction("Share Penggemar (Tarif: Rp 0,05) video $targetOrCreator", amount)
+    }
+
+    suspend fun incrementCoinsForBookmark(amount: Long = 5L) {
+        rewardCoinForInteraction("Simpan Penggemar (Tarif: Rp 0,05) ke favorit", amount)
+    }
+
+    suspend fun incrementCoinsForFollow(creatorUsername: String, amount: Long = 5L) {
+        rewardCoinForInteraction("Follow Penggemar (Tarif: Rp 0,05) ke $creatorUsername", amount)
+    }
+
+    suspend fun decrementCoinsForGift(gift: VibeGift, creatorName: String): Boolean {
+        return spendCoinsForGift(gift, creatorName)
     }
 }
