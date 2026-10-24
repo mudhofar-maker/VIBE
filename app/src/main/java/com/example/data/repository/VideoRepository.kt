@@ -11,6 +11,9 @@ import com.example.data.local.VideoInteractionEntity
 import com.example.data.model.CoinConversionCalculation
 import com.example.data.model.CommentItem
 import com.example.data.model.DanaWithdrawalResult
+import com.example.data.model.CreatorNotification
+import com.example.data.model.CreatorNotificationCategory
+import com.example.data.model.CreatorNotificationType
 import com.example.data.model.NotificationItem
 import com.example.data.model.NotificationType
 import com.example.data.model.UserDanaProfile
@@ -260,6 +263,72 @@ class VideoRepository(private val dao: TokVidDao) {
 
     private val deletedVideoIdsFlow = MutableStateFlow<Set<String>>(emptySet())
     private val editedVideoCaptionsFlow = MutableStateFlow<Map<String, Pair<String, List<String>>>>(emptyMap())
+
+    private val _creatorNotificationsFlow = MutableStateFlow<List<CreatorNotification>>(
+        listOf(
+            CreatorNotification(
+                id = "notif_seed_1",
+                title = "Menerima Hadiah VibeGift!",
+                description = "Bella Poarch mengirim Paus Megah (100 Koin) di video Anda",
+                senderName = "Bella Poarch",
+                senderAvatar = "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200",
+                type = CreatorNotificationType.GIFT_RECEIVED,
+                monetizationRupiah = 800_000.0,
+                coinsEarned = 100L,
+                giftEmoji = "🐋",
+                timeFormatted = "2 menit lalu",
+                targetVideoTitle = "Trend dance viral 2026",
+                isRead = false
+            ),
+            CreatorNotification(
+                id = "notif_seed_2",
+                title = "Saweran DANA P2P Masuk!",
+                description = "Fahri Danz menyawer Rp 50.000 langsung via Barcode DANA Anda",
+                senderName = "Fahri Danz",
+                senderAvatar = "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200",
+                type = CreatorNotificationType.SAWER_DANA,
+                monetizationRupiah = 50_000.0,
+                timeFormatted = "15 menit lalu",
+                isRead = false
+            ),
+            CreatorNotification(
+                id = "notif_seed_3",
+                title = "Royalti Suka Penggemar",
+                description = "Clarissa menyukai video kuliner Anda",
+                senderName = "Clarissa M",
+                senderAvatar = "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200",
+                type = CreatorNotificationType.LIKE_INTERACTION,
+                monetizationRupiah = 0.05,
+                timeFormatted = "32 menit lalu",
+                targetVideoTitle = "Resep Nasi Goreng Kampung",
+                isRead = true
+            ),
+            CreatorNotification(
+                id = "notif_seed_4",
+                title = "Pengikut Baru Bergabung",
+                description = "Budi Santoso mulai mengikuti saluran Anda",
+                senderName = "Budi Santoso",
+                senderAvatar = "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200",
+                type = CreatorNotificationType.NEW_FOLLOWER,
+                monetizationRupiah = 0.05,
+                timeFormatted = "1 jam lalu",
+                isRead = true
+            ),
+            CreatorNotification(
+                id = "notif_seed_5",
+                title = "Royalti Komentar Penggemar",
+                description = "Maya menulis: 'Resepnya juara banget chef!'",
+                senderName = "Maya Foodie",
+                senderAvatar = "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=200",
+                type = CreatorNotificationType.COMMENT_INTERACTION,
+                monetizationRupiah = 0.05,
+                timeFormatted = "2 jam lalu",
+                targetVideoTitle = "Resep Nasi Goreng Kampung",
+                isRead = true
+            )
+        )
+    )
+    val creatorNotificationsFlow: Flow<List<CreatorNotification>> = _creatorNotificationsFlow
 
     val allVideosFlow: Flow<List<VideoItem>> = combine(
         dao.getAllInteractions(),
@@ -847,6 +916,109 @@ class VideoRepository(private val dao: TokVidDao) {
     }
 
     suspend fun decrementCoinsForGift(gift: VibeGift, creatorName: String): Boolean {
-        return spendCoinsForGift(gift, creatorName)
+        val result = spendCoinsForGift(gift, creatorName)
+        if (result) {
+            val notif = CreatorNotification(
+                id = "gift_${System.currentTimeMillis()}",
+                title = "Hadiah VibeGift Diterima!",
+                description = "@saya mengirim ${gift.emoji} ${gift.name} (${gift.coinCost} Koin) untuk $creatorName",
+                senderName = "@saya",
+                senderAvatar = "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200",
+                type = CreatorNotificationType.GIFT_RECEIVED,
+                monetizationRupiah = gift.coinCost * 8000.0,
+                coinsEarned = gift.coinCost,
+                giftEmoji = gift.emoji,
+                timeFormatted = "Baru saja"
+            )
+            addCreatorNotification(notif)
+        }
+        return result
+    }
+
+    fun addCreatorNotification(notification: CreatorNotification) {
+        _creatorNotificationsFlow.value = listOf(notification) + _creatorNotificationsFlow.value
+    }
+
+    fun markAllNotificationsAsRead() {
+        _creatorNotificationsFlow.value = _creatorNotificationsFlow.value.map { it.copy(isRead = true) }
+    }
+
+    suspend fun simulateRealtimeFanAlert(): CreatorNotification {
+        val samples = listOf(
+            Triple("Sultan Jakarta", "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200", "Singa Emas"),
+            Triple("Rania Cantika", "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200", "Mawar Merah"),
+            Triple("Gita Gamer", "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=200", "Roket"),
+            Triple("Dimas Foodie", "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200", "Sawer DANA")
+        )
+        val pick = samples.random()
+        val notif = when (pick.third) {
+            "Sawer DANA" -> {
+                val amount = 25_000.0
+                incrementDirectSawerCount(amount)
+                CreatorNotification(
+                    id = "alert_${System.currentTimeMillis()}",
+                    title = "Saweran DANA P2P Masuk!",
+                    description = "${pick.first} menyawer Rp 25.000 ke Barcode DANA Anda",
+                    senderName = pick.first,
+                    senderAvatar = pick.second,
+                    type = CreatorNotificationType.SAWER_DANA,
+                    monetizationRupiah = amount,
+                    timeFormatted = "Baru saja"
+                )
+            }
+            "Singa Emas" -> {
+                val coinVal = 500L
+                val rupiahVal = coinVal * 8000.0
+                rewardCoinForInteraction("Menerima Gift Singa Emas dari ${pick.first}", coinVal)
+                CreatorNotification(
+                    id = "alert_${System.currentTimeMillis()}",
+                    title = "Hadiah Akbar Diterima!",
+                    description = "${pick.first} mengirim Singa Emas ($coinVal Koin) di video Anda",
+                    senderName = pick.first,
+                    senderAvatar = pick.second,
+                    type = CreatorNotificationType.GIFT_RECEIVED,
+                    monetizationRupiah = rupiahVal,
+                    coinsEarned = coinVal,
+                    giftEmoji = "🦁",
+                    timeFormatted = "Baru saja"
+                )
+            }
+            "Roket" -> {
+                val coinVal = 250L
+                val rupiahVal = coinVal * 8000.0
+                rewardCoinForInteraction("Menerima Gift Roket dari ${pick.first}", coinVal)
+                CreatorNotification(
+                    id = "alert_${System.currentTimeMillis()}",
+                    title = "Hadiah Roket Diterima!",
+                    description = "${pick.first} mengirim Roket Luar Angkasa ($coinVal Koin)",
+                    senderName = pick.first,
+                    senderAvatar = pick.second,
+                    type = CreatorNotificationType.GIFT_RECEIVED,
+                    monetizationRupiah = rupiahVal,
+                    coinsEarned = coinVal,
+                    giftEmoji = "🚀",
+                    timeFormatted = "Baru saja"
+                )
+            }
+            else -> {
+                val coinVal = 10L
+                val rupiahVal = coinVal * 8000.0
+                rewardCoinForInteraction("Menerima Gift Mawar dari ${pick.first}", coinVal)
+                CreatorNotification(
+                    id = "alert_${System.currentTimeMillis()}",
+                    title = "Hadiah Mawar Diterima!",
+                    description = "${pick.first} mengirim Mawar Merah ($coinVal Koin)",
+                    senderName = pick.first,
+                    senderAvatar = pick.second,
+                    type = CreatorNotificationType.GIFT_RECEIVED,
+                    monetizationRupiah = rupiahVal,
+                    coinsEarned = coinVal,
+                    giftEmoji = "🌹",
+                    timeFormatted = "Baru saja"
+                )
+            }
+        }
+        addCreatorNotification(notif)
+        return notif
     }
 }

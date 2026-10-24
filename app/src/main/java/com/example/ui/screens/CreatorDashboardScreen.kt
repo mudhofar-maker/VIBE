@@ -36,6 +36,8 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Movie
+import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.NotificationsActive
 import androidx.compose.material.icons.filled.Payments
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Search
@@ -122,6 +124,8 @@ fun CreatorDashboardScreen(
     onUpdateVideo: (videoId: String, newCaption: String, newTags: List<String>) -> Unit,
     onOpenWithdrawal: () -> Unit,
     onOpenUploadNewVideo: () -> Unit,
+    onOpenNotificationCenter: () -> Unit = {},
+    unreadNotificationCount: Int = 0,
     onBackClick: () -> Unit
 ) {
     val context = LocalContext.current
@@ -191,22 +195,51 @@ fun CreatorDashboardScreen(
                 }
             }
 
-            Button(
-                onClick = onOpenUploadNewVideo,
-                colors = ButtonDefaults.buttonColors(containerColor = TikTokRed),
-                shape = RoundedCornerShape(10.dp),
-                modifier = Modifier
-                    .height(36.dp)
-                    .testTag("creator_new_video_button")
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Add,
-                    contentDescription = null,
-                    tint = Color.White,
-                    modifier = Modifier.size(16.dp)
-                )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                // Pusat Notifikasi Bell Icon with Unread Badge
+                IconButton(
+                    onClick = onOpenNotificationCenter,
+                    modifier = Modifier.testTag("creator_dashboard_notification_bell")
+                ) {
+                    Box(modifier = Modifier.size(28.dp), contentAlignment = Alignment.Center) {
+                        Icon(
+                            imageVector = if (unreadNotificationCount > 0) Icons.Default.NotificationsActive else Icons.Default.Notifications,
+                            contentDescription = "Pusat Notifikasi",
+                            tint = if (unreadNotificationCount > 0) TikTokCyan else TextSecondary,
+                            modifier = Modifier.size(22.dp)
+                        )
+                        if (unreadNotificationCount > 0) {
+                            Box(
+                                modifier = Modifier
+                                    .align(Alignment.TopEnd)
+                                    .size(9.dp)
+                                    .clip(CircleShape)
+                                    .background(TikTokRed)
+                                    .border(1.dp, DarkBackground, CircleShape)
+                            )
+                        }
+                    }
+                }
+
                 Spacer(modifier = Modifier.width(4.dp))
-                Text("Video Baru", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+
+                Button(
+                    onClick = onOpenUploadNewVideo,
+                    colors = ButtonDefaults.buttonColors(containerColor = TikTokRed),
+                    shape = RoundedCornerShape(10.dp),
+                    modifier = Modifier
+                        .height(36.dp)
+                        .testTag("creator_new_video_button")
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = null,
+                        tint = Color.White,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text("Video Baru", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                }
             }
         }
 

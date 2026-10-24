@@ -9,6 +9,9 @@ import com.example.data.model.CommentItem
 import com.example.data.model.DanaWithdrawalResult
 import com.example.data.model.ContentFilterType
 import com.example.data.model.CreatorEarningsSummary
+import com.example.data.model.CreatorNotification
+import com.example.data.model.CreatorNotificationCategory
+import com.example.data.model.CreatorNotificationType
 import com.example.data.model.CreatorPerformanceSummary
 import com.example.data.model.CreatorTimeRange
 import com.example.data.model.DailyMetricPoint
@@ -262,6 +265,35 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     val notifications: List<NotificationItem> = repository.getNotifications()
+
+    val creatorNotifications: StateFlow<List<CreatorNotification>> = repository.creatorNotificationsFlow
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    val unreadCreatorNotificationCount: StateFlow<Int> = creatorNotifications.map { list ->
+        list.count { !it.isRead }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 2)
+
+    private val _isNotificationCenterOpen = MutableStateFlow(false)
+    val isNotificationCenterOpen: StateFlow<Boolean> = _isNotificationCenterOpen.asStateFlow()
+
+    fun openNotificationCenter() {
+        _isNotificationCenterOpen.value = true
+    }
+
+    fun closeNotificationCenter() {
+        _isNotificationCenterOpen.value = false
+    }
+
+    fun markAllCreatorNotificationsAsRead() {
+        repository.markAllNotificationsAsRead()
+    }
+
+    fun simulateRealtimeFanAlert(onResult: ((CreatorNotification) -> Unit)? = null) {
+        viewModelScope.launch {
+            val notif = repository.simulateRealtimeFanAlert()
+            onResult?.invoke(notif)
+        }
+    }
 
     fun setNavTab(tab: NavigationTab) {
         _currentNavTab.value = tab
