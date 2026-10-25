@@ -571,6 +571,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    fun incrementDirectSawerCount(amount: Double = 10_000.0) {
+        viewModelScope.launch {
+            repository.incrementDirectSawerCount(amount)
+        }
+    }
+
     fun createVideo(
         caption: String,
         tags: String,

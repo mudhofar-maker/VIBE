@@ -75,6 +75,7 @@ import com.example.ui.screens.InboxScreen
 import com.example.ui.screens.LongVideoWatchScreen
 import com.example.ui.screens.ProfileScreen
 import com.example.ui.screens.ShortsScreen
+import com.example.ui.screens.LiveStreamingScreen
 import com.example.ui.theme.DarkBackground
 import com.example.ui.theme.DarkBorder
 import com.example.ui.theme.LiveRed
@@ -135,10 +136,13 @@ fun TokVidApp(viewModel: MainViewModel) {
     var showCreateOptionsSheet by remember { mutableStateOf(false) }
     var showUploadDialog by remember { mutableStateOf(false) }
     var uploadInitialIsLongVideo by remember { mutableStateOf(false) }
+    var isDirectLiveStreamingActive by remember { mutableStateOf(false) }
 
     // Handle back button for sub-screens
-    BackHandler(enabled = currentTab != NavigationTab.HOME) {
-        if (currentTab == NavigationTab.WATCH) {
+    BackHandler(enabled = currentTab != NavigationTab.HOME || isDirectLiveStreamingActive) {
+        if (isDirectLiveStreamingActive) {
+            isDirectLiveStreamingActive = false
+        } else if (currentTab == NavigationTab.WATCH) {
             viewModel.closeWatchVideo()
         } else if (currentTab == NavigationTab.CREATOR_DASHBOARD) {
             viewModel.setNavTab(NavigationTab.PROFILE)
@@ -172,7 +176,7 @@ fun TokVidApp(viewModel: MainViewModel) {
                     onTabSelected = { viewModel.setFeedTab(it) },
                     onSearchClick = { viewModel.setNavTab(NavigationTab.DISCOVER) },
                     onLiveClick = {
-                        Toast.makeText(context, "Menghubungkan ke siaran langsung VibeStream...", Toast.LENGTH_SHORT).show()
+                        isDirectLiveStreamingActive = true
                     },
                     onLikeClick = {
                         viewModel.toggleLike(it)
@@ -538,6 +542,15 @@ fun TokVidApp(viewModel: MainViewModel) {
             animation = activeGiftAnimation,
             onFinished = { viewModel.clearGiftAnimation() }
         )
+
+        // Fullscreen Live Streaming Studio Screen
+        if (isDirectLiveStreamingActive) {
+            LiveStreamingScreen(
+                onEndLive = { isDirectLiveStreamingActive = false },
+                onSawerReceived = { amount -> viewModel.incrementDirectSawerCount(amount) },
+                onCoinReceived = { coins -> viewModel.rechargeCoins(coins, "Hadiah Siaran Langsung") }
+            )
+        }
     }
 }
 

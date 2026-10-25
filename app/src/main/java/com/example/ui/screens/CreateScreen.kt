@@ -1,6 +1,10 @@
 package com.example.ui.screens
 
+import android.net.Uri
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearEasing
@@ -34,9 +38,13 @@ import androidx.compose.material.icons.filled.Cameraswitch
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.FlashOn
+import androidx.compose.material.icons.filled.LiveTv
 import androidx.compose.material.icons.filled.MusicNote
+import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material.icons.filled.Speed
+import androidx.compose.material.icons.filled.TextFields
 import androidx.compose.material.icons.filled.Timer
+import androidx.compose.material.icons.filled.Videocam
 import androidx.compose.material.icons.filled.CloudUpload
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -48,6 +56,10 @@ import com.example.ui.components.UploadVideoDialog
 import com.example.ui.components.EffectsAndFiltersStudioSheet
 import com.example.ui.components.VideoEffectOverlay
 import com.example.ui.components.VideoEffectsRegistry
+import com.example.ui.components.MusicSelectorDialog
+import com.example.ui.components.DraggableZoomableCaptionText
+import com.example.ui.components.EditCaptionDialog
+import com.example.ui.components.VideoCaptionItem
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
@@ -56,6 +68,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -83,12 +96,25 @@ import com.example.ui.theme.TikTokCyan
 import com.example.ui.theme.TikTokRed
 import kotlinx.coroutines.delay
 
+enum class CreateMode {
+    RECORD, GALLERY, LIVE
+}
+
 @Composable
 fun CreateScreen(
     onClose: () -> Unit,
     onPublishVideo: (caption: String, tags: String, sound: String, category: String, isLongVideo: Boolean, durationFormatted: String) -> Unit
 ) {
     val context = LocalContext.current
+    var isLiveStreamingActive by remember { mutableStateOf(false) }
+    var showMusicSelector by remember { mutableStateOf(false) }
+    var selectedCreateMode by remember { mutableStateOf(CreateMode.RECORD) }
+
+    // Dynamic Pinch-to-zoom Captions State
+    val captions = remember { mutableStateListOf<VideoCaptionItem>() }
+    var captionBeingEdited by remember { mutableStateOf<VideoCaptionItem?>(null) }
+    var pickedGalleryUri by remember { mutableStateOf<Uri?>(null) }
+
     var isRecording by remember { mutableStateOf(false) }
     var recordingProgress by remember { mutableFloatStateOf(0f) }
     var showPublishDialog by remember { mutableStateOf(false) }
@@ -106,6 +132,38 @@ fun CreateScreen(
     var selectedSound by remember { mutableStateOf("DJ Tabrak Masuk - Remix 2026") }
 
     val speeds = listOf("0.5x", "1x", "2x", "3x")
+
+    // Android Zero-Permission Photo/Video Picker for Gallery Videos
+    val galleryPickerLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.PickVisualMedia()
+    ) { uri: Uri? ->
+        if (uri != null) {
+            pickedGalleryUri = uri
+            Toast.makeText(context, "Video dari galeri HP berhasil dimuat!", Toast.LENGTH_SHORT).show()
+            showPublishDialog = true
+        }
+    }
+
+    // Camera & Audio Permission Launcher for Phone Camera
+    val cameraPermissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { perms ->
+        val camGranted = perms[android.Manifest.permission.CAMERA] ?: false
+        val micGranted = perms[android.Manifest.permission.RECORD_AUDIO] ?: false
+        if (camGranted) {
+            Toast.makeText(context, "Kamera HP siap digunakan!", Toast.LENGTH_SHORT).show()
+        } else {
+            Toast.makeText(context, "Izin kamera diperlukan untuk merekam langsung.", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    // Launch Live Streaming Studio if active
+    if (isLiveStreamingActive) {
+        LiveStreamingScreen(
+            onEndLive = { isLiveStreamingActive = false }
+        )
+        return
+    }
 
     // Recording simulation timer
     LaunchedEffect(isRecording) {
@@ -153,9 +211,28 @@ fun CreateScreen(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(32.dp)
+                .padding(28.dp)
                 .border(1.dp, Color.White.copy(alpha = 0.15f), RoundedCornerShape(20.dp))
         )
+
+        // Dynamic Interactive Captions with Pinch-to-Zoom (Cubit Layar)
+        captions.forEachIndexed { index, captionItem ->
+            DraggableZoomableCaptionText(
+                caption = captionItem,
+                onUpdate = { updated ->
+                    if (index < captions.size) {
+                        captions[index] = updated
+                    }
+                },
+                onDelete = {
+                    if (index < captions.size) {
+                        captions.removeAt(index)
+                    }
+                },
+                onEditRequested = { captionBeingEdited = captionItem },
+                modifier = Modifier.align(Alignment.Center)
+            )
+        }
 
         // Top Controls Bar
         Row(
@@ -177,16 +254,16 @@ fun CreateScreen(
                 )
             }
 
-            // Music sound selector pill
+            // Music sound selector pill (opens MusicSelectorDialog)
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
                     .clip(RoundedCornerShape(20.dp))
-                    .background(Color(0x66000000))
-                    .clickable {
-                        Toast.makeText(context, "Musik aktif: $selectedSound", Toast.LENGTH_SHORT).show()
-                    }
-                    .padding(horizontal = 12.dp, vertical = 6.dp)
+                    .background(Color(0x77000000))
+                    .border(1.dp, TikTokCyan.copy(alpha = 0.6f), RoundedCornerShape(20.dp))
+                    .clickable { showMusicSelector = true }
+                    .padding(horizontal = 14.dp, vertical = 6.dp)
+                    .testTag("select_music_pill")
             ) {
                 Icon(
                     imageVector = Icons.Default.MusicNote,
@@ -196,10 +273,10 @@ fun CreateScreen(
                 )
                 Spacer(modifier = Modifier.width(6.dp))
                 Text(
-                    text = selectedSound.take(20) + "...",
+                    text = selectedSound.take(22) + if (selectedSound.length > 22) "..." else "",
                     color = Color.White,
                     fontSize = 12.sp,
-                    fontWeight = FontWeight.Medium
+                    fontWeight = FontWeight.Bold
                 )
             }
 
@@ -216,18 +293,41 @@ fun CreateScreen(
             }
         }
 
-        // Right side camera controls (Flip, Speed, Filter, Timer)
+        // Right side camera controls (Teks, Musik, Putar, Speed, Filter, Efek)
+        val currentFilterItem = remember(selectedFilterId) { VideoEffectsRegistry.getFilterById(selectedFilterId) }
+        val currentEffectItem = remember(selectedEffectId) { VideoEffectsRegistry.getEffectById(selectedEffectId) }
+
         Column(
             modifier = Modifier
                 .align(Alignment.CenterEnd)
                 .padding(end = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(20.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Active Filter & Effect items
-            val currentFilterItem = remember(selectedFilterId) { VideoEffectsRegistry.getFilterById(selectedFilterId) }
-            val currentEffectItem = remember(selectedEffectId) { VideoEffectsRegistry.getEffectById(selectedEffectId) }
+            // Add Text Font Full Color Button (Bisa di-cubit)
+            CameraToolButton(
+                icon = Icons.Default.TextFields,
+                label = "Teks",
+                isActive = captions.isNotEmpty(),
+                onClick = {
+                    val newCap = VideoCaptionItem(
+                        id = "cap_${System.currentTimeMillis()}",
+                        text = "VibeStream Keren ✨"
+                    )
+                    captions.add(newCap)
+                    captionBeingEdited = newCap
+                }
+            )
 
+            // Music Selector Button
+            CameraToolButton(
+                icon = Icons.Default.MusicNote,
+                label = "Musik",
+                isActive = true,
+                onClick = { showMusicSelector = true }
+            )
+
+            // Flip Camera
             CameraToolButton(
                 icon = Icons.Default.Cameraswitch,
                 label = "Putar",
@@ -235,6 +335,7 @@ fun CreateScreen(
                 onClick = { isFrontCamera = !isFrontCamera }
             )
 
+            // Speed
             CameraToolButton(
                 icon = Icons.Default.Speed,
                 label = selectedSpeed,
@@ -245,6 +346,7 @@ fun CreateScreen(
                 }
             )
 
+            // Filter Studio
             CameraToolButton(
                 icon = Icons.Default.AutoAwesome,
                 label = if (selectedFilterId != "normal") currentFilterItem.name else "Filter",
@@ -255,13 +357,12 @@ fun CreateScreen(
                 }
             )
 
+            // Live Streaming Quick Button
             CameraToolButton(
-                icon = Icons.Default.Timer,
-                label = "Timer",
-                isActive = false,
-                onClick = {
-                    Toast.makeText(context, "Timer 3 detik disiapkan", Toast.LENGTH_SHORT).show()
-                }
+                icon = Icons.Default.LiveTv,
+                label = "LIVE",
+                isActive = true,
+                onClick = { isLiveStreamingActive = true }
             )
         }
 
@@ -326,20 +427,118 @@ fun CreateScreen(
             }
         }
 
-        // Bottom Controls (Record button and prompt)
+        // Bottom Section: Mode Switcher, Shutter, Gallery & Upload
         Column(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
-                .padding(bottom = 32.dp),
+                .padding(bottom = 28.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            // Mode Switcher Tabs: Rekam | Galeri HP | LIVE STREAM
+            Row(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(24.dp))
+                    .background(Color(0x990A0A0E))
+                    .border(1.dp, Color.White.copy(alpha = 0.25f), RoundedCornerShape(24.dp))
+                    .padding(4.dp),
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Tab 1: Rekam Video
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(18.dp))
+                        .background(if (selectedCreateMode == CreateMode.RECORD) TikTokCyan else Color.Transparent)
+                        .clickable { selectedCreateMode = CreateMode.RECORD }
+                        .padding(horizontal = 14.dp, vertical = 6.dp)
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Default.Videocam,
+                            contentDescription = null,
+                            tint = if (selectedCreateMode == CreateMode.RECORD) Color.Black else Color.White,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = "Rekam",
+                            color = if (selectedCreateMode == CreateMode.RECORD) Color.Black else Color.White,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+
+                // Tab 2: Galeri HP (Android Photo/Video Picker)
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(18.dp))
+                        .background(Color.Transparent)
+                        .clickable {
+                            selectedCreateMode = CreateMode.GALLERY
+                            galleryPickerLauncher.launch(
+                                PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.VideoOnly)
+                            )
+                        }
+                        .padding(horizontal = 14.dp, vertical = 6.dp)
+                        .testTag("pick_from_phone_gallery_button")
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Default.PhotoLibrary,
+                            contentDescription = null,
+                            tint = Color.White,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = "Galeri HP",
+                            color = Color.White,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+
+                // Tab 3: LIVE STREAM Studio
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(18.dp))
+                        .background(if (selectedCreateMode == CreateMode.LIVE) LiveRed else Color.Transparent)
+                        .clickable {
+                            selectedCreateMode = CreateMode.LIVE
+                            isLiveStreamingActive = true
+                        }
+                        .padding(horizontal = 14.dp, vertical = 6.dp)
+                        .testTag("launch_live_streaming_tab")
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Box(
+                            modifier = Modifier
+                                .size(8.dp)
+                                .clip(CircleShape)
+                                .background(LiveRed)
+                        )
+                        Spacer(modifier = Modifier.width(5.dp))
+                        Text(
+                            text = "LIVE",
+                            color = Color.White,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.ExtraBold
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(14.dp))
+
             Text(
                 text = if (isRecording) "Ketuk untuk berhenti & simpan" else "Ketuk tombol merah untuk merekam video",
                 color = Color.White.copy(alpha = 0.8f),
-                fontSize = 13.sp
+                fontSize = 12.sp
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(14.dp))
 
             // Shutter & Quick Action Row (Efek, Record, Upload)
             val infiniteTransition = rememberInfiniteTransition(label = "recordingPulse")
@@ -410,6 +609,9 @@ fun CreateScreen(
                         .clip(CircleShape)
                         .background(TikTokRed)
                         .clickable {
+                            cameraPermissionLauncher.launch(
+                                arrayOf(android.Manifest.permission.CAMERA, android.Manifest.permission.RECORD_AUDIO)
+                            )
                             if (isRecording) {
                                 isRecording = false
                                 showPublishDialog = true
@@ -430,11 +632,15 @@ fun CreateScreen(
                     }
                 }
 
-                // Upload Video Button
+                // Galeri HP Direct Button
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier
-                        .clickable { showUploadDialogInCreate = true }
+                        .clickable {
+                            galleryPickerLauncher.launch(
+                                PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.VideoOnly)
+                            )
+                        }
                         .padding(6.dp)
                         .testTag("upload_from_camera_button")
                 ) {
@@ -447,16 +653,45 @@ fun CreateScreen(
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
-                            imageVector = Icons.Default.CloudUpload,
-                            contentDescription = "Upload Video",
-                            tint = Color.White,
+                            imageVector = Icons.Default.PhotoLibrary,
+                            contentDescription = "Galeri HP",
+                            tint = TikTokCyan,
                             modifier = Modifier.size(22.dp)
                         )
                     }
                     Spacer(modifier = Modifier.height(4.dp))
-                    Text("Upload", color = Color.White, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                    Text("Galeri", color = Color.White, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                 }
             }
+        }
+
+        // Music Selector Dialog
+        if (showMusicSelector) {
+            MusicSelectorDialog(
+                currentSound = selectedSound,
+                onDismiss = { showMusicSelector = false },
+                onSelectSound = { title, artist ->
+                    selectedSound = title
+                    Toast.makeText(context, "Musik dipilih: $title", Toast.LENGTH_SHORT).show()
+                }
+            )
+        }
+
+        // Edit Caption Dialog
+        if (captionBeingEdited != null) {
+            EditCaptionDialog(
+                initialCaption = captionBeingEdited!!,
+                onDismiss = { captionBeingEdited = null },
+                onConfirm = { updated ->
+                    val existingIdx = captions.indexOfFirst { it.id == updated.id }
+                    if (existingIdx >= 0) {
+                        captions[existingIdx] = updated
+                    } else {
+                        captions.add(updated)
+                    }
+                    captionBeingEdited = null
+                }
+            )
         }
 
         // Studio Efek & Filter Bottom Sheet
@@ -489,10 +724,17 @@ fun CreateScreen(
 
         // Publish recorded video dialog
         if (showPublishDialog) {
+            val captionDefault = if (captions.isNotEmpty()) {
+                captions.joinToString(" ") { it.text } + " #fyp #vibe"
+            } else {
+                "Video keren terbaru saya! Yuk tonton sampai habis ✨ #fyp #tokvid"
+            }
+
             PublishVideoDialog(
                 defaultSound = selectedSound,
                 activeFilterName = currentFilter.name,
                 activeEffectName = currentEffect.name,
+                initialCaption = captionDefault,
                 onDismiss = { showPublishDialog = false },
                 onPublish = { caption, tags, category, isLong, duration ->
                     showPublishDialog = false
@@ -557,10 +799,11 @@ private fun PublishVideoDialog(
     defaultSound: String,
     activeFilterName: String = "Normal",
     activeEffectName: String = "Tanpa Efek",
+    initialCaption: String = "Video keren terbaru saya! Yuk tonton sampai habis ✨ #fyp #tokvid",
     onDismiss: () -> Unit,
     onPublish: (caption: String, tags: String, category: String, isLongVideo: Boolean, durationFormatted: String) -> Unit
 ) {
-    var caption by remember { mutableStateOf("Video keren terbaru saya! Yuk tonton sampai habis ✨ #fyp #tokvid") }
+    var caption by remember { mutableStateOf(initialCaption) }
     var tags by remember { mutableStateOf("#fyp #viral #indonesia #kreator") }
     var selectedCategory by remember { mutableStateOf("Tari & Musik") }
     var isLongVideo by remember { mutableStateOf(false) }
