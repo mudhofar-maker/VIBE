@@ -56,6 +56,7 @@ import com.example.data.model.VideoItem
 import com.example.ui.components.BureaucracyFreePolicyDialog
 import com.example.ui.components.CommentsBottomSheet
 import com.example.ui.components.CreateContentBottomSheet
+import com.example.ui.components.CreatorNotificationCenterDialog
 import com.example.ui.components.CreatorProfileDialog
 import com.example.ui.components.DanaProfileEtalaseDialog
 import com.example.ui.components.DanaSawerP2PDialog
@@ -123,6 +124,9 @@ fun TokVidApp(viewModel: MainViewModel) {
     val contentFilter by viewModel.contentFilter.collectAsStateWithLifecycle()
     val contentSearchQuery by viewModel.contentSearchQuery.collectAsStateWithLifecycle()
     val thirtyDayTrend by viewModel.thirtyDayEarningsTrend.collectAsStateWithLifecycle()
+    val creatorNotifications by viewModel.creatorNotifications.collectAsStateWithLifecycle()
+    val unreadNotificationCount by viewModel.unreadCreatorNotificationCount.collectAsStateWithLifecycle()
+    val isNotificationCenterOpen by viewModel.isNotificationCenterOpen.collectAsStateWithLifecycle()
 
     val commentsSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val shareSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -156,7 +160,7 @@ fun TokVidApp(viewModel: MainViewModel) {
                     onOpenWatchVideo = { video -> viewModel.openWatchVideo(video) },
                     onOpenShorts = { video -> viewModel.openShorts(video) },
                     onSearchClick = { viewModel.setNavTab(NavigationTab.DISCOVER) },
-                    onNotificationClick = { viewModel.setNavTab(NavigationTab.INBOX) },
+                    onNotificationClick = { viewModel.openNotificationCenter() },
                     onProfileClick = { viewModel.setNavTab(NavigationTab.PROFILE) }
                 )
             }
@@ -322,6 +326,8 @@ fun TokVidApp(viewModel: MainViewModel) {
                         uploadInitialIsLongVideo = false
                         showUploadDialog = true
                     },
+                    onOpenNotificationCenter = { viewModel.openNotificationCenter() },
+                    unreadNotificationCount = unreadNotificationCount,
                     onBackClick = { viewModel.setNavTab(NavigationTab.PROFILE) }
                 )
             }
@@ -514,6 +520,16 @@ fun TokVidApp(viewModel: MainViewModel) {
                     viewModel.withdrawCoinsToDana(coinCount, targetPhone, targetName, onResult)
                 },
                 onDismiss = { viewModel.closeWithdrawalDialog() }
+            )
+        }
+
+        // Creator Notification Center Dialog
+        if (isNotificationCenterOpen) {
+            CreatorNotificationCenterDialog(
+                notifications = creatorNotifications,
+                onMarkAllAsRead = { viewModel.markAllCreatorNotificationsAsRead() },
+                onSimulateAlert = { callback -> viewModel.simulateRealtimeFanAlert(callback) },
+                onDismiss = { viewModel.closeNotificationCenter() }
             )
         }
 

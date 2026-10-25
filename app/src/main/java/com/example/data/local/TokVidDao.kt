@@ -68,7 +68,7 @@ interface TokVidDao {
     suspend fun upsertCoinWallet(wallet: UserCoinWalletEntity)
 
     // Coin Transactions History
-    @Query("SELECT * FROM coin_transactions ORDER BY timestamp DESC")
+    @Query("SELECT * FROM coin_transactions ORDER BY timestamp DESC LIMIT 100")
     fun getAllCoinTransactions(): Flow<List<CoinTransactionEntity>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)

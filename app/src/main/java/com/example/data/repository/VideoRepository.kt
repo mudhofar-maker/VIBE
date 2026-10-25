@@ -148,6 +148,28 @@ class VideoRepository(private val dao: TokVidDao) {
             viewsCount = 320500L
         ),
         VideoItem(
+            id = "vid_7",
+            videoUrl = "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
+            thumbnailUrl = "https://images.unsplash.com/photo-1542751371-adc38448a05e?w=800",
+            creatorUsername = "@pro_gamer_id",
+            creatorName = "Gita Gamer",
+            creatorAvatar = "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=200",
+            isVerified = true,
+            caption = "Clutch 1v5 moment paling menegangkan di turnamen esports nusantara! Headshot penentu kemenangan 🔥🎮 #gaming #trending #esports #clutch #gameplay",
+            tags = listOf("gaming", "trending", "esports", "clutch", "gameplay"),
+            soundTitle = "Epic Gaming Battle Synth - Gita",
+            soundAuthor = "@pro_gamer_id",
+            soundCoverUrl = "https://images.unsplash.com/photo-1511512578047-dfb367046420?w=200",
+            likesCount = 520000,
+            commentsCount = 9800,
+            bookmarksCount = 45000,
+            sharesCount = 28000,
+            category = "Gaming",
+            isLongVideo = false,
+            durationFormatted = "0:58",
+            viewsCount = 1850000L
+        ),
+        VideoItem(
             id = "long_1",
             videoUrl = "https://storage.googleapis.com/exoplayer-test-media-0/BigBuckBunny_320x180.mp4",
             thumbnailUrl = "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=1000",
@@ -746,23 +768,24 @@ class VideoRepository(private val dao: TokVidDao) {
     // --- VibeCoins Internal Currency System ---
     fun getUserCoinWallet(): Flow<Long> {
         return dao.getUserCoinWallet().map { wallet ->
-            if (wallet == null) {
-                // Initialize with 500 bonus coins
-                dao.upsertCoinWallet(UserCoinWalletEntity("primary_user_wallet", 500L))
-                dao.insertCoinTransaction(
-                    CoinTransactionEntity(
-                        id = "tx_welcome_${System.currentTimeMillis()}",
-                        title = "Bonus Selamat Datang",
-                        amount = 500L,
-                        isEarned = true,
-                        description = "Modal awal koin interaksi & gift P2P",
-                        iconEmoji = "🪙"
-                    )
+            wallet?.balance ?: 500L
+        }
+    }
+
+    suspend fun ensureWalletInitialized() {
+        val existing = dao.getUserCoinWalletSync()
+        if (existing == null) {
+            dao.upsertCoinWallet(UserCoinWalletEntity(PRIMARY_COIN_WALLET_ID, 500L))
+            dao.insertCoinTransaction(
+                CoinTransactionEntity(
+                    id = "tx_welcome_seed",
+                    title = "Bonus Selamat Datang",
+                    amount = 500L,
+                    isEarned = true,
+                    description = "Modal awal koin interaksi & gift P2P",
+                    iconEmoji = "🪙"
                 )
-                500L
-            } else {
-                wallet.balance
-            }
+            )
         }
     }
 
@@ -775,7 +798,7 @@ class VideoRepository(private val dao: TokVidDao) {
         val currentBalance = current?.balance ?: 500L
         val newBalance = currentBalance + amount
 
-        dao.upsertCoinWallet(UserCoinWalletEntity("primary_user_wallet", newBalance))
+        dao.upsertCoinWallet(UserCoinWalletEntity(PRIMARY_COIN_WALLET_ID, newBalance))
         dao.insertCoinTransaction(
             CoinTransactionEntity(
                 id = "tx_recharge_${System.currentTimeMillis()}",
@@ -793,7 +816,7 @@ class VideoRepository(private val dao: TokVidDao) {
         val currentBalance = current?.balance ?: 500L
         val newBalance = currentBalance + 150L
 
-        dao.upsertCoinWallet(UserCoinWalletEntity("primary_user_wallet", newBalance))
+        dao.upsertCoinWallet(UserCoinWalletEntity(PRIMARY_COIN_WALLET_ID, newBalance))
         dao.insertCoinTransaction(
             CoinTransactionEntity(
                 id = "tx_daily_${System.currentTimeMillis()}",
@@ -821,7 +844,7 @@ class VideoRepository(private val dao: TokVidDao) {
         val currentBalance = current?.balance ?: 500L
         val newBalance = currentBalance + amount
 
-        dao.upsertCoinWallet(UserCoinWalletEntity("primary_user_wallet", newBalance))
+        dao.upsertCoinWallet(UserCoinWalletEntity(PRIMARY_COIN_WALLET_ID, newBalance))
         dao.insertCoinTransaction(
             CoinTransactionEntity(
                 id = "tx_voucher_${System.currentTimeMillis()}",
@@ -843,7 +866,7 @@ class VideoRepository(private val dao: TokVidDao) {
         }
 
         val newBalance = currentBalance - gift.coinCost
-        dao.upsertCoinWallet(UserCoinWalletEntity("primary_user_wallet", newBalance))
+        dao.upsertCoinWallet(UserCoinWalletEntity(PRIMARY_COIN_WALLET_ID, newBalance))
         dao.insertCoinTransaction(
             CoinTransactionEntity(
                 id = "tx_gift_${System.currentTimeMillis()}",
@@ -862,7 +885,7 @@ class VideoRepository(private val dao: TokVidDao) {
         val currentBalance = current?.balance ?: 500L
         val newBalance = currentBalance + amount
 
-        dao.upsertCoinWallet(UserCoinWalletEntity("primary_user_wallet", newBalance))
+        dao.upsertCoinWallet(UserCoinWalletEntity(PRIMARY_COIN_WALLET_ID, newBalance))
         dao.insertCoinTransaction(
             CoinTransactionEntity(
                 id = "tx_reward_${System.currentTimeMillis()}",
@@ -881,7 +904,7 @@ class VideoRepository(private val dao: TokVidDao) {
         val currentBalance = current?.balance ?: 500L
         val newBalance = currentBalance + coinCount
 
-        dao.upsertCoinWallet(UserCoinWalletEntity("primary_user_wallet", newBalance))
+        dao.upsertCoinWallet(UserCoinWalletEntity(PRIMARY_COIN_WALLET_ID, newBalance))
         dao.insertCoinTransaction(
             CoinTransactionEntity(
                 id = "tx_conv_${System.currentTimeMillis()}",
@@ -1020,5 +1043,10 @@ class VideoRepository(private val dao: TokVidDao) {
         }
         addCreatorNotification(notif)
         return notif
+    }
+
+    companion object {
+        const val PRIMARY_COIN_WALLET_ID = "primary_coin_wallet"
+        const val PRIMARY_DANA_ID = "primary_user_dana"
     }
 }

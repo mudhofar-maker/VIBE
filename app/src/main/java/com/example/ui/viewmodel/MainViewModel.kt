@@ -48,6 +48,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         VideoRepository(db.tokVidDao())
     }
 
+    init {
+        viewModelScope.launch {
+            repository.ensureWalletInitialized()
+        }
+    }
+
     private val _currentNavTab = MutableStateFlow(NavigationTab.HOME)
     val currentNavTab: StateFlow<NavigationTab> = _currentNavTab.asStateFlow()
 

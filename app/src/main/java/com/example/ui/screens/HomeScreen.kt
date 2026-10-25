@@ -83,34 +83,42 @@ fun HomeScreen(
 
     val categories = listOf(
         "Semua",
-        "Shorts 🔥",
-        "Video Panjang 🎬",
-        "Teknologi",
-        "Kuliner",
-        "Wisata",
-        "Komedi",
-        "Tari & Musik"
+        "Trending 🔥",
+        "Music 🎵",
+        "Gaming 🎮",
+        "Comedy 😂",
+        "Teknologi ⚡",
+        "Kuliner 🍳",
+        "Shorts (9:16)",
+        "Video Panjang (16:9)"
     )
 
     val shorts = remember(videos) { videos.filter { !it.isLongVideo } }
     val longVideos = remember(videos) { videos.filter { it.isLongVideo } }
 
-    val filteredLongVideos = remember(videos, selectedCategory) {
-        when (selectedCategory) {
-            "Semua" -> longVideos
-            "Video Panjang 🎬" -> longVideos
-            "Shorts 🔥" -> emptyList()
-            else -> longVideos.filter { it.category.contains(selectedCategory, ignoreCase = true) }
+    val isVideoMatch: (VideoItem, String) -> Boolean = { video, cat ->
+        when (cat) {
+            "Semua" -> true
+            "Trending 🔥" -> video.viewsCount >= 400000L || video.tags.any { it.contains("trend", true) || it.contains("viral", true) || it.contains("fyp", true) }
+            "Music 🎵" -> video.category.contains("Musik", true) || video.category.contains("Tari", true) || video.tags.any { it.contains("dance", true) || it.contains("musik", true) || it.contains("remix", true) }
+            "Gaming 🎮" -> video.category.contains("Gaming", true) || video.tags.any { it.contains("game", true) || it.contains("esports", true) }
+            "Comedy 😂" -> video.category.contains("Komedi", true) || video.tags.any { it.contains("komedi", true) || it.contains("lucu", true) || it.contains("ngakak", true) }
+            "Teknologi ⚡" -> video.category.contains("Teknologi", true) || video.tags.any { it.contains("teknologi", true) || it.contains("gadget", true) }
+            "Kuliner 🍳" -> video.category.contains("Kuliner", true) || video.tags.any { it.contains("kuliner", true) || it.contains("resep", true) }
+            "Shorts (9:16)" -> !video.isLongVideo
+            "Video Panjang (16:9)" -> video.isLongVideo
+            else -> video.category.contains(cat, ignoreCase = true)
         }
     }
 
+    val filteredLongVideos = remember(videos, selectedCategory) {
+        if (selectedCategory == "Shorts (9:16)") emptyList()
+        else longVideos.filter { isVideoMatch(it, selectedCategory) }
+    }
+
     val filteredShorts = remember(videos, selectedCategory) {
-        when (selectedCategory) {
-            "Semua" -> shorts
-            "Shorts 🔥" -> shorts
-            "Video Panjang 🎬" -> emptyList()
-            else -> shorts.filter { it.category.contains(selectedCategory, ignoreCase = true) }
-        }
+        if (selectedCategory == "Video Panjang (16:9)") emptyList()
+        else shorts.filter { isVideoMatch(it, selectedCategory) }
     }
 
     val heroVideo = longVideos.firstOrNull() ?: videos.firstOrNull()
