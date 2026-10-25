@@ -352,18 +352,21 @@ fun TokVidApp(viewModel: MainViewModel) {
             CreateContentBottomSheet(
                 onDismiss = { showCreateOptionsSheet = false },
                 onUploadVideoClick = {
-                    uploadInitialIsLongVideo = false
-                    showUploadDialog = true
+                    showCreateOptionsSheet = false
+                    viewModel.setNavTab(NavigationTab.CREATE)
                 },
                 onRecordShortsClick = {
+                    showCreateOptionsSheet = false
                     viewModel.setNavTab(NavigationTab.CREATE)
                 },
                 onUploadLongVideoClick = {
+                    showCreateOptionsSheet = false
                     uploadInitialIsLongVideo = true
                     showUploadDialog = true
                 },
                 onGoLiveClick = {
-                    Toast.makeText(context, "Menghubungkan ke Studio Siaran Langsung VibeStream...", Toast.LENGTH_SHORT).show()
+                    showCreateOptionsSheet = false
+                    isDirectLiveStreamingActive = true
                 }
             )
         }

@@ -103,6 +103,12 @@
       <!-- Right Header Actions (Wallet, Notifications, DANA CTA) -->
       <div class="flex items-center gap-2.5">
         
+        <!-- Mobile Quick Create (+) Button -->
+        <button onclick="openCreateActionSheet()" class="flex md:hidden items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-tiktokRed via-purple-600 to-tiktokCyan text-white font-extrabold text-xs rounded-xl shadow-lg active:scale-95 transition-transform" title="Rekam / Upload Galeri / LIVE">
+          <span class="text-sm font-black">＋</span>
+          <span>Buat</span>
+        </button>
+
         <!-- Live Coin Wallet Badge -->
         <button onclick="openCoinModal()" class="flex items-center gap-1.5 px-3 py-1.5 bg-darkCard hover:bg-darkSurface border border-yellow-500/30 rounded-xl transition-all">
           <span class="text-sm">🪙</span>
@@ -161,7 +167,7 @@
   </header>
 
   <!-- MAIN APP CONTAINER -->
-  <main class="flex-1 max-w-7xl w-full mx-auto p-4 md:p-6">
+  <main class="flex-1 max-w-7xl w-full mx-auto p-4 md:p-6 pb-28">
 
     <!-- ==================== VIEW 1: VIDEO FEED & SHORTS ==================== -->
     <div id="view-feed" class="space-y-6">
@@ -397,6 +403,164 @@
 
   </main>
 
+  <!-- ==================== TIKTOK-STYLE FIXED BOTTOM NAVIGATION BAR ==================== -->
+  <nav id="bottom-nav-bar" class="fixed bottom-0 inset-x-0 z-40 bg-darkBg/95 backdrop-blur-xl border-t border-darkBorder flex items-center justify-around py-2 px-2 shadow-2xl">
+    <!-- 1. Beranda -->
+    <button onclick="switchView('feed'); selectBottomNav('nav-home')" id="nav-btn-home" class="flex flex-col items-center gap-0.5 text-white py-1 px-3 transition-colors">
+      <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+      <span class="text-[10px] font-bold">Beranda</span>
+    </button>
+
+    <!-- 2. Shorts -->
+    <button onclick="switchView('feed'); setFeedFormat('shorts'); selectBottomNav('nav-shorts')" id="nav-btn-shorts" class="flex flex-col items-center gap-0.5 text-slate-400 hover:text-white py-1 px-3 transition-colors">
+      <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M7 2v11h3v9l7-12h-4l4-8z"/></svg>
+      <span class="text-[10px] font-bold">Shorts</span>
+    </button>
+
+    <!-- 3. TOMBOL PLUS (+) PUSAT KREATIF TIKTOK ICONIC -->
+    <button onclick="openCreateActionSheet()" class="relative group mx-2 flex flex-col items-center justify-center -top-1" title="Rekam Kamera, Upload Galeri HP, atau LIVE">
+      <div class="relative w-12 h-8 rounded-xl bg-gradient-to-r from-tiktokCyan via-white to-tiktokRed p-[2px] shadow-lg shadow-tiktokRed/30 transition-transform group-hover:scale-110 active:scale-95">
+        <div class="w-full h-full bg-darkBg rounded-[10px] flex items-center justify-center">
+          <svg class="w-5 h-5 text-white fill-current font-black" viewBox="0 0 24 24">
+            <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+          </svg>
+        </div>
+      </div>
+      <span class="text-[9px] font-black text-white mt-0.5 tracking-tight">Buat</span>
+    </button>
+
+    <!-- 4. Kotak Masuk / Notifikasi -->
+    <button onclick="toggleNotificationModal(); selectBottomNav('nav-inbox')" id="nav-btn-inbox" class="relative flex flex-col items-center gap-0.5 text-slate-400 hover:text-white py-1 px-3 transition-colors">
+      <div class="relative">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+        <span id="nav-inbox-badge" class="absolute -top-1.5 -right-2 w-3.5 h-3.5 bg-tiktokRed text-white text-[8px] font-extrabold rounded-full flex items-center justify-center animate-pulse">2</span>
+      </div>
+      <span class="text-[10px] font-medium">Kotak Masuk</span>
+    </button>
+
+    <!-- 5. Profil / Studio Kreator -->
+    <button onclick="switchView('creator'); selectBottomNav('nav-profile')" id="nav-btn-profile" class="flex flex-col items-center gap-0.5 text-slate-400 hover:text-white py-1 px-3 transition-colors">
+      <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+      <span class="text-[10px] font-medium">Profil</span>
+    </button>
+  </nav>
+
+  <!-- FLOATING QUICK CREATION BUTTON (MOBILE FAB) -->
+  <button onclick="openCreateActionSheet()" class="fixed bottom-20 right-4 z-40 sm:hidden flex items-center gap-2 px-3.5 py-2 rounded-full bg-gradient-to-r from-tiktokRed via-purple-600 to-tiktokCyan text-white font-extrabold text-xs shadow-2xl shadow-tiktokRed/50 active:scale-95 border border-white/20 transition-all">
+    <span class="text-sm font-black">➕</span>
+    <span>Rekam / Galeri</span>
+  </button>
+
+  <!-- DIRECT HIDDEN FILE INPUT UNTUK GALERI HP -->
+  <input type="file" id="direct-gallery-picker" accept="video/*" class="hidden" onchange="handleDirectGalleryPick(event)" />
+
+  <!-- ==================== MODAL: LEMBAR AKSI BUAT KONTEN (TOMBOL PLUS) ==================== -->
+  <div id="modal-create-action-sheet" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden flex items-end sm:items-center justify-center p-0 sm:p-4 transition-all">
+    <div class="bg-darkSurface border border-darkBorder rounded-t-3xl sm:rounded-3xl w-full max-w-md p-5 space-y-4 shadow-2xl animate-in slide-in-from-bottom duration-200">
+      <div class="flex items-center justify-between pb-3 border-b border-darkBorder">
+        <div>
+          <h3 class="text-base font-extrabold text-white flex items-center gap-2">
+            <span>✨</span> Buat Konten VibeStream
+          </h3>
+          <p class="text-xs text-slate-400">Pilih sumber video atau mulai siaran langsung</p>
+        </div>
+        <button onclick="closeCreateActionSheet()" class="w-8 h-8 rounded-full bg-darkCard text-slate-400 hover:text-white flex items-center justify-center text-sm">✕</button>
+      </div>
+
+      <!-- Action 1: Rekam Video Kamera HP -->
+      <button onclick="startCameraRecordingStudio()" class="w-full p-4 rounded-2xl bg-gradient-to-r from-darkCard to-darkCard/60 border border-tiktokRed/40 hover:border-tiktokRed flex items-center gap-4 text-left group transition-all">
+        <div class="w-12 h-12 rounded-xl bg-tiktokRed/20 text-tiktokRed flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
+          📸
+        </div>
+        <div class="flex-1">
+          <div class="flex items-center justify-between">
+            <h4 class="text-sm font-bold text-white">Rekam Video Kamera HP</h4>
+            <span class="px-2 py-0.5 rounded-full bg-tiktokRed/20 text-tiktokRed text-[10px] font-extrabold">KAMERA</span>
+          </div>
+          <p class="text-xs text-slate-400 mt-0.5">Buka kamera depan/belakang, timer rekam, flash & audio</p>
+        </div>
+      </button>
+
+      <!-- Action 2: Upload dari Galeri HP -->
+      <button onclick="triggerDirectGalleryPick()" class="w-full p-4 rounded-2xl bg-gradient-to-r from-darkCard to-darkCard/60 border border-tiktokCyan/40 hover:border-tiktokCyan flex items-center gap-4 text-left group transition-all">
+        <div class="w-12 h-12 rounded-xl bg-tiktokCyan/20 text-tiktokCyan flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
+          📁
+        </div>
+        <div class="flex-1">
+          <div class="flex items-center justify-between">
+            <h4 class="text-sm font-bold text-white">Upload dari Galeri HP</h4>
+            <span class="px-2 py-0.5 rounded-full bg-tiktokCyan/20 text-tiktokCyan text-[10px] font-extrabold">GALERI</span>
+          </div>
+          <p class="text-xs text-slate-400 mt-0.5">Pilih video dari galeri HP, tambah musik & teks full color zoomable</p>
+        </div>
+      </button>
+
+      <!-- Action 3: Siaran Langsung (LIVE Stream) -->
+      <button onclick="closeCreateActionSheet(); openLiveStudioModal();" class="w-full p-4 rounded-2xl bg-gradient-to-r from-darkCard to-darkCard/60 border border-red-500/40 hover:border-red-500 flex items-center gap-4 text-left group transition-all">
+        <div class="w-12 h-12 rounded-xl bg-red-500/20 text-red-500 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
+          🔴
+        </div>
+        <div class="flex-1">
+          <div class="flex items-center justify-between">
+            <h4 class="text-sm font-bold text-white">Siaran Langsung (LIVE Stream)</h4>
+            <span class="px-2 py-0.5 rounded-full bg-red-500 text-white text-[10px] font-extrabold animate-pulse">LIVE</span>
+          </div>
+          <p class="text-xs text-slate-400 mt-0.5">Studio broadcast interaktif, penonton live, & saweran DANA 0%</p>
+        </div>
+      </button>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL: STUDIO PEREKAM KAMERA HP LENGKAP ==================== -->
+  <div id="modal-camera-recorder" class="fixed inset-0 z-50 bg-black hidden flex flex-col justify-between">
+    <!-- Camera Top Bar -->
+    <div class="p-4 flex items-center justify-between z-10 bg-gradient-to-b from-black/80 to-transparent">
+      <button onclick="closeCameraRecordingStudio()" class="w-9 h-9 rounded-full bg-black/60 text-white flex items-center justify-center text-sm font-bold">✕</button>
+      <div class="flex items-center gap-2 px-3 py-1 bg-black/60 backdrop-blur rounded-full text-xs font-mono font-bold text-white border border-white/20">
+        <span id="cam-rec-dot" class="w-2.5 h-2.5 rounded-full bg-slate-500"></span>
+        <span id="cam-timer">00:00</span>
+      </div>
+      <button onclick="flipCameraFacing()" class="w-9 h-9 rounded-full bg-black/60 text-white flex items-center justify-center text-base" title="Balik Kamera">🔄</button>
+    </div>
+
+    <!-- Camera Live Viewfinder -->
+    <div class="relative flex-1 bg-slate-950 flex items-center justify-center overflow-hidden">
+      <video id="camera-stream-preview" autoplay playsinline muted class="w-full h-full object-cover"></video>
+      <div id="camera-fallback-msg" class="absolute inset-0 flex flex-col items-center justify-center p-6 text-center bg-darkBg/95 hidden">
+        <span class="text-4xl mb-3">📸</span>
+        <h3 class="text-base font-bold text-white">Kamera Belum Aktif / Ditolak Browser</h3>
+        <p class="text-xs text-slate-400 mt-1 max-w-xs">Anda tetap bisa merekam atau mengunggah video langsung dari Galeri HP Anda.</p>
+        <button onclick="closeCameraRecordingStudio(); triggerDirectGalleryPick();" class="mt-4 px-5 py-2.5 bg-tiktokCyan text-black font-extrabold text-xs rounded-xl shadow-lg">
+          📁 Buka Galeri HP Sekarang
+        </button>
+      </div>
+    </div>
+
+    <!-- Camera Bottom Controls -->
+    <div class="p-6 bg-gradient-to-t from-black/90 via-black/60 to-transparent flex items-center justify-around z-10">
+      <!-- Direct Gallery Picker shortcut -->
+      <button onclick="closeCameraRecordingStudio(); triggerDirectGalleryPick();" class="flex flex-col items-center gap-1 text-white text-xs">
+        <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-lg border border-white/40">
+          📁
+        </div>
+        <span class="text-[10px]">Galeri</span>
+      </button>
+
+      <!-- Big Record Button -->
+      <button id="btn-camera-record" onclick="toggleCameraRecording()" class="w-16 h-16 rounded-full border-4 border-white flex items-center justify-center p-1 transition-transform active:scale-95">
+        <div id="btn-record-inner" class="w-12 h-12 rounded-full bg-tiktokRed transition-all"></div>
+      </button>
+
+      <!-- Music Selector shortcut -->
+      <button onclick="closeCameraRecordingStudio(); openCreateVideoModal();" class="flex flex-col items-center gap-1 text-white text-xs">
+        <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-lg border border-white/40">
+          🎵
+        </div>
+        <span class="text-[10px]">Teks & Musik</span>
+      </button>
+    </div>
+  </div>
+
   <!-- ==================== MODAL 1: REAL-TIME NOTIFICATION CENTER ==================== -->
   <div id="modal-notif" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm hidden flex items-center justify-center p-4">
     <div class="bg-darkSurface border border-tiktokCyan/50 rounded-2xl max-w-lg w-full max-h-[85vh] flex flex-col shadow-2xl">
@@ -588,36 +752,40 @@
 
       <div class="p-4 space-y-4 overflow-y-auto custom-scroll flex-1">
         <!-- Interactive Preview Box with Zoomable Full-Color Text Caption -->
-        <div id="creator-preview-box" class="relative w-full h-52 bg-slate-900 border border-darkBorder rounded-xl flex items-center justify-center overflow-hidden">
+        <div id="creator-preview-box" class="relative w-full h-56 bg-slate-900 border border-darkBorder rounded-xl flex items-center justify-center overflow-hidden touch-none">
           <video id="creator-sample-video" autoplay loop muted playsinline class="w-full h-full object-cover">
             <source src="https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4" type="video/mp4">
           </video>
           
+          <!-- Source Badge (Gallery / Camera) -->
+          <div id="creator-source-badge" class="absolute top-2 left-2 bg-black/75 backdrop-blur border border-tiktokCyan/50 rounded-lg px-2.5 py-1 text-[10px] font-bold text-tiktokCyan flex items-center gap-1.5 shadow">
+            <span>📁</span> <span id="creator-source-name">Video Siap Edit</span>
+          </div>
+
           <!-- Pinch-to-zoom Draggable Caption Overlay -->
-          <div id="creator-overlay-text-container" class="absolute inset-0 flex items-center justify-center pointer-events-none p-4">
-            <span id="creator-overlay-text" class="px-3 py-1.5 rounded-xl font-extrabold text-base transition-all select-none shadow-lg" style="color: #00E5FF; background-color: rgba(0,0,0,0.6); border: 2px solid #00E5FF; transform: scale(1.2);">
+          <div id="creator-overlay-text-container" class="absolute inset-0 flex items-center justify-center p-4">
+            <span id="creator-overlay-text" class="px-3.5 py-1.5 rounded-xl font-extrabold text-base transition-transform select-none shadow-xl cursor-pointer" style="color: #00E5FF; background-color: rgba(0,0,0,0.65); border: 2px solid #00E5FF; transform: scale(1.2);">
               VibeStream Viral 2026 ✨
             </span>
           </div>
 
-          <!-- Zoom Pill Controller Overlay (Bisa Di-cubit / Zoom In & Out) -->
-          <div class="absolute top-2 right-2 bg-black/80 border border-tiktokCyan/60 rounded-full px-2.5 py-1 flex items-center gap-2 text-xs font-bold">
+          <!-- Zoom Pill Controller Overlay (Bisa Di-cubit 2 Jari / Tombol Zoom In & Out) -->
+          <div class="absolute top-2 right-2 bg-black/85 border border-tiktokCyan/60 rounded-full px-2.5 py-1 flex items-center gap-2 text-xs font-bold shadow-xl">
             <span class="text-tiktokCyan text-[11px]" id="creator-zoom-label">1.2x</span>
-            <button onclick="adjustCaptionZoom(0.2)" class="w-5 h-5 rounded bg-darkSurface hover:bg-tiktokCyan hover:text-black text-white flex items-center justify-center">+</button>
-            <button onclick="adjustCaptionZoom(-0.2)" class="w-5 h-5 rounded bg-darkSurface hover:bg-tiktokCyan hover:text-black text-white flex items-center justify-center">−</button>
-            <button onclick="resetCaptionZoom()" class="text-[10px] text-tiktokRed hover:underline">Reset</button>
+            <button onclick="adjustCaptionZoom(0.2)" class="w-6 h-6 rounded bg-darkSurface hover:bg-tiktokCyan hover:text-black text-white flex items-center justify-center font-black active:scale-90" title="Zoom In (Perbesar)">+</button>
+            <button onclick="adjustCaptionZoom(-0.2)" class="w-6 h-6 rounded bg-darkSurface hover:bg-tiktokCyan hover:text-black text-white flex items-center justify-center font-black active:scale-90" title="Zoom Out (Perkecil)">−</button>
+            <button onclick="resetCaptionZoom()" class="text-[10px] text-tiktokRed hover:underline font-bold">Reset</button>
           </div>
         </div>
 
         <!-- 1. Sumber Video: Kamera HP vs Galeri -->
         <div class="grid grid-cols-2 gap-2.5">
-          <button onclick="triggerCameraCapture()" class="py-2.5 px-3 bg-darkSurface hover:bg-slate-800 border border-darkBorder rounded-xl text-xs font-bold flex items-center justify-center gap-2 text-white transition-all">
+          <button onclick="closeCreateVideoModal(); startCameraRecordingStudio();" class="py-2.5 px-3 bg-darkSurface hover:bg-slate-800 border border-tiktokRed/50 rounded-xl text-xs font-bold flex items-center justify-center gap-2 text-white transition-all shadow active:scale-95">
             <span>📸</span> Rekam Kamera HP
           </button>
-          <label class="py-2.5 px-3 bg-darkSurface hover:bg-slate-800 border border-darkBorder rounded-xl text-xs font-bold flex items-center justify-center gap-2 text-white transition-all cursor-pointer">
-            <span>📁</span> Pilih Galeri HP
-            <input type="file" accept="video/*" class="hidden" onchange="handleGalleryVideoPick(event)">
-          </label>
+          <button onclick="triggerDirectGalleryPick()" class="py-2.5 px-3 bg-darkSurface hover:bg-slate-800 border border-tiktokCyan/50 rounded-xl text-xs font-bold flex items-center justify-center gap-2 text-white transition-all shadow active:scale-95">
+            <span>📁</span> Ganti Galeri HP
+          </button>
         </div>
 
         <!-- 2. Tambah Musik Selector -->
@@ -662,7 +830,7 @@
         </div>
 
         <!-- Publish Button -->
-        <button onclick="publishCreatorVideo()" class="w-full py-3 bg-gradient-to-r from-tiktokRed to-tiktokCyan text-black font-extrabold rounded-xl text-xs shadow-lg hover:opacity-95 transition-all">
+        <button onclick="publishCreatorVideo()" class="w-full py-3.5 bg-gradient-to-r from-tiktokRed via-purple-600 to-tiktokCyan text-white font-extrabold rounded-xl text-sm shadow-xl hover:opacity-95 active:scale-95 transition-all">
           🚀 Publikasikan Video Baru ke Feed
         </button>
       </div>
@@ -1204,6 +1372,142 @@
       box.scrollTop = box.scrollHeight;
     }
 
+    // Global Creator Studio State
+    let activeVideoSourceUrl = null;
+    let activeVideoSourceName = "Video Galeri HP";
+
+    // Action Sheet & Direct Gallery Picker
+    function openCreateActionSheet() {
+      document.getElementById('modal-create-action-sheet').classList.remove('hidden');
+    }
+
+    function closeCreateActionSheet() {
+      document.getElementById('modal-create-action-sheet').classList.add('hidden');
+    }
+
+    function triggerDirectGalleryPick() {
+      closeCreateActionSheet();
+      const picker = document.getElementById('direct-gallery-picker');
+      picker.value = '';
+      picker.click();
+    }
+
+    function handleDirectGalleryPick(e) {
+      const file = e.target.files && e.target.files[0];
+      if (file) {
+        activeVideoSourceUrl = URL.createObjectURL(file);
+        activeVideoSourceName = file.name;
+        const vid = document.getElementById('creator-sample-video');
+        vid.src = activeVideoSourceUrl;
+        vid.play().catch(err => console.log("Autoplay preview:", err));
+        document.getElementById('creator-source-name').innerText = file.name;
+        closeCreateActionSheet();
+        openCreateVideoModal();
+        alert(`📁 Video "${file.name}" dari Galeri HP Anda berhasil dimuat! Anda dapat mengatur teks caption (bisa dicubit/zoom) dan memilih musik.`);
+      }
+    }
+
+    // Camera Studio Recording State & Logic
+    let cameraStream = null;
+    let mediaRecorder = null;
+    let recordedChunks = [];
+    let isRecordingCamera = false;
+    let cameraFacingMode = 'user';
+    let cameraTimerInterval = null;
+    let cameraSeconds = 0;
+
+    async function startCameraRecordingStudio() {
+      closeCreateActionSheet();
+      document.getElementById('modal-camera-recorder').classList.remove('hidden');
+      document.getElementById('camera-fallback-msg').classList.add('hidden');
+      try {
+        if (cameraStream) {
+          cameraStream.getTracks().forEach(t => t.stop());
+        }
+        cameraStream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: cameraFacingMode },
+          audio: true
+        });
+        const vid = document.getElementById('camera-stream-preview');
+        vid.srcObject = cameraStream;
+        vid.play();
+      } catch (err) {
+        console.warn("Camera stream error:", err);
+        document.getElementById('camera-fallback-msg').classList.remove('hidden');
+      }
+    }
+
+    function closeCameraRecordingStudio() {
+      if (cameraTimerInterval) clearInterval(cameraTimerInterval);
+      if (mediaRecorder && isRecordingCamera) {
+        mediaRecorder.stop();
+      }
+      if (cameraStream) {
+        cameraStream.getTracks().forEach(t => t.stop());
+        cameraStream = null;
+      }
+      isRecordingCamera = false;
+      document.getElementById('modal-camera-recorder').classList.add('hidden');
+    }
+
+    async function flipCameraFacing() {
+      cameraFacingMode = cameraFacingMode === 'user' ? 'environment' : 'user';
+      await startCameraRecordingStudio();
+    }
+
+    function toggleCameraRecording() {
+      if (!cameraStream) {
+        alert("Kamera tidak tersedia di browser ini. Membuka Galeri HP...");
+        triggerDirectGalleryPick();
+        return;
+      }
+
+      if (!isRecordingCamera) {
+        recordedChunks = [];
+        try {
+          mediaRecorder = new MediaRecorder(cameraStream);
+        } catch (e) {
+          mediaRecorder = new MediaRecorder(cameraStream, { mimeType: 'video/webm' });
+        }
+        mediaRecorder.ondataavailable = (e) => {
+          if (e.data && e.data.size > 0) {
+            recordedChunks.push(e.data);
+          }
+        };
+        mediaRecorder.onstop = () => {
+          const blob = new Blob(recordedChunks, { type: 'video/mp4' });
+          activeVideoSourceUrl = URL.createObjectURL(blob);
+          activeVideoSourceName = "Hasil Rekaman Kamera HP";
+          const vid = document.getElementById('creator-sample-video');
+          vid.src = activeVideoSourceUrl;
+          vid.play().catch(e => console.log(e));
+          document.getElementById('creator-source-name').innerText = "Rekaman Kamera HP";
+          closeCameraRecordingStudio();
+          openCreateVideoModal();
+          alert("🎉 Rekaman kamera selesai! Sekarang tambahkan teks full color (cubit zoom) dan musik viral.");
+        };
+
+        mediaRecorder.start();
+        isRecordingCamera = true;
+        cameraSeconds = 0;
+        document.getElementById('cam-rec-dot').className = "w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse";
+        document.getElementById('btn-record-inner').className = "w-8 h-8 rounded-md bg-white transition-all";
+
+        cameraTimerInterval = setInterval(() => {
+          cameraSeconds++;
+          const m = Math.floor(cameraSeconds / 60).toString().padStart(2, '0');
+          const s = (cameraSeconds % 60).toString().padStart(2, '0');
+          document.getElementById('cam-timer').innerText = `${m}:${s}`;
+        }, 1000);
+      } else {
+        if (cameraTimerInterval) clearInterval(cameraTimerInterval);
+        mediaRecorder.stop();
+        isRecordingCamera = false;
+        document.getElementById('cam-rec-dot').className = "w-2.5 h-2.5 rounded-full bg-slate-500";
+        document.getElementById('btn-record-inner').className = "w-12 h-12 rounded-full bg-tiktokRed transition-all";
+      }
+    }
+
     // Video Creator with Zoomable Full-Color Captions & Music
     let captionScale = 1.2;
     function openCreateVideoModal() {
@@ -1239,18 +1543,7 @@
 
     function setCaptionFont(type, classes) {
       const el = document.getElementById('creator-overlay-text');
-      el.className = `px-3 py-1.5 rounded-xl text-base transition-all select-none shadow-lg ${classes}`;
-    }
-
-    function triggerCameraCapture() {
-      alert("📸 Kamera HP diaktifkan! Menggunakan mode perekaman video sensor real-time.");
-    }
-
-    function handleGalleryVideoPick(e) {
-      const file = e.target.files && e.target.files[0];
-      if (file) {
-        alert(`📁 Video "${file.name}" berhasil dipilih dari Galeri HP Anda!`);
-      }
+      el.className = `px-3.5 py-1.5 rounded-xl text-base transition-transform select-none shadow-xl cursor-pointer ${classes}`;
     }
 
     function updateCreatorMusic() {
@@ -1259,8 +1552,73 @@
     }
 
     function publishCreatorVideo() {
-      alert("🚀 Video berhasil dipublikasikan dengan caption dan musik ke feed VibeStream!");
+      const caption = document.getElementById('creator-text-input').value.trim() || 'VibeStream Viral 2026 ✨';
+      const music = document.getElementById('creator-music-select').value;
+
+      if (activeVideoSourceUrl) {
+        const shortsVid = document.getElementById('shorts-video');
+        shortsVid.src = activeVideoSourceUrl;
+        shortsVid.play().catch(e => console.log(e));
+      }
+      document.getElementById('shorts-caption').innerText = `${caption} 🎵 ${music}`;
+      document.getElementById('shorts-creator-name').innerText = '@saya (Kreator)';
+
       closeCreateVideoModal();
+      switchView('feed');
+      setFeedFormat('shorts');
+      selectBottomNav('nav-shorts');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      alert(`🎉 Video baru berhasil dipublikasikan dari ${activeVideoSourceName} ke Feed VibeStream! Selamat berkarya!`);
+    }
+
+    function selectBottomNav(tab) {
+      const tabs = ['nav-home', 'nav-shorts', 'nav-inbox', 'nav-profile'];
+      tabs.forEach(t => {
+        const el = document.getElementById('nav-btn-' + t.replace('nav-', ''));
+        if (el) {
+          if (t === tab) {
+            el.className = 'flex flex-col items-center gap-0.5 text-white py-1 px-3 transition-colors';
+          } else {
+            el.className = 'flex flex-col items-center gap-0.5 text-slate-400 hover:text-white py-1 px-3 transition-colors';
+          }
+        }
+      });
+    }
+
+    // Touch Pinch-to-Zoom Gesture for Caption
+    function initPinchToZoom() {
+      const box = document.getElementById('creator-preview-box');
+      if (!box) return;
+
+      let initialPinchDistance = null;
+      let initialPinchScale = 1.2;
+
+      box.addEventListener('touchstart', (e) => {
+        if (e.touches.length === 2) {
+          initialPinchDistance = Math.hypot(
+            e.touches[0].pageX - e.touches[1].pageX,
+            e.touches[0].pageY - e.touches[1].pageY
+          );
+          initialPinchScale = captionScale;
+        }
+      }, { passive: true });
+
+      box.addEventListener('touchmove', (e) => {
+        if (e.touches.length === 2 && initialPinchDistance) {
+          const currentDist = Math.hypot(
+            e.touches[0].pageX - e.touches[1].pageX,
+            e.touches[0].pageY - e.touches[1].pageY
+          );
+          const ratio = currentDist / initialPinchDistance;
+          captionScale = Math.min(3.5, Math.max(0.5, initialPinchScale * ratio));
+          document.getElementById('creator-overlay-text').style.transform = `scale(${captionScale.toFixed(2)})`;
+          document.getElementById('creator-zoom-label').innerText = `${captionScale.toFixed(1)}x`;
+        }
+      }, { passive: true });
+
+      box.addEventListener('touchend', () => {
+        initialPinchDistance = null;
+      });
     }
 
     // Initialize App
@@ -1268,6 +1626,7 @@
       renderLongVideos();
       updateBalances();
       updateNotificationUI();
+      initPinchToZoom();
     });
   </script>
 </body>

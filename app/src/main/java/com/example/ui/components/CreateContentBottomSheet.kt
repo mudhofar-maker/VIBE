@@ -126,13 +126,13 @@ fun CreateContentBottomSheet(
 
             Spacer(modifier = Modifier.height(18.dp))
 
-            // Option 1: Upload Video (Short / Long)
+            // Option 1: Upload Video dari Galeri HP
             CreationOptionCard(
-                title = "Upload Video",
-                subtitle = "Pilih klip video atau masukkan tautan (Shorts & Video Panjang)",
+                title = "Upload dari Galeri HP",
+                subtitle = "Pilih klip video langsung dari penyimpanan atau galeri HP Anda",
                 icon = Icons.Default.CloudUpload,
                 iconGradient = listOf(TikTokCyan, Color(0xFF00B4D8)),
-                badgeText = "Paling Sering",
+                badgeText = "Galeri HP",
                 badgeColor = TikTokCyan,
                 badgeTextColor = Color.Black,
                 testTag = "action_upload_video",
@@ -144,13 +144,13 @@ fun CreateContentBottomSheet(
 
             Spacer(modifier = Modifier.height(10.dp))
 
-            // Option 2: Record Shorts (Camera)
+            // Option 2: Record Video Camera
             CreationOptionCard(
-                title = "Rekam Video Shorts",
-                subtitle = "Buka studio kamera dengan filter, musik latar, dan efek",
+                title = "Rekam Video Kamera HP",
+                subtitle = "Perekaman kamera depan/belakang, efek teks zoom, dan musik latar",
                 icon = Icons.Default.Videocam,
                 iconGradient = listOf(TikTokRed, Color(0xFFFF5277)),
-                badgeText = "Studio Shorts",
+                badgeText = "Kamera HP",
                 badgeColor = TikTokRed,
                 badgeTextColor = Color.White,
                 testTag = "action_record_shorts",
