@@ -1,0 +1,960 @@
+<!DOCTYPE html>
+<html lang="id" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VibeStream - Video Terpadu & Studio Kreator Nusantara</title>
+  <meta name="description" content="Platform video terpadu Shorts (9:16) dan Video Panjang (16:9) dengan Sawer DANA P2P 0% potongan, royalti interaksi Rp 0,05, dan Studio Kreator." />
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><linearGradient id='g' x1='0%' y1='0%' x2='100%' y2='100%'><stop offset='0%' stop-color='%23FE2C55'/><stop offset='100%' stop-color='%2300E5FF'/></linearGradient></defs><rect width='100' height='100' rx='25' fill='%23121212'/><polygon points='38,28 75,50 38,72' fill='url(%23g)'/></svg>" />
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+          },
+          colors: {
+            tiktokRed: '#FE2C55',
+            tiktokCyan: '#00E5FF',
+            tiktokYellow: '#FFD700',
+            danaBlue: '#118EEA',
+            darkBg: '#0B0E14',
+            darkCard: '#151922',
+            darkSurface: '#1C2230',
+            darkBorder: '#273142',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      background-color: #0B0E14;
+      color: #F8FAFC;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      overflow-x: hidden;
+    }
+    .custom-scroll::-webkit-scrollbar {
+      height: 4px;
+      width: 4px;
+    }
+    .custom-scroll::-webkit-scrollbar-track {
+      background: #151922;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb {
+      background: #273142;
+      border-radius: 4px;
+    }
+    @keyframes pulse-subtle {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.85; transform: scale(1.03); }
+    }
+    .animate-pulse-subtle {
+      animation: pulse-subtle 3s infinite ease-in-out;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col bg-darkBg text-slate-100">
+
+  <!-- TOP APP BAR -->
+  <header class="sticky top-0 z-40 bg-darkBg/90 backdrop-blur-md border-b border-darkBorder">
+    <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between gap-4">
+      
+      <!-- Brand Logo -->
+      <div class="flex items-center gap-3 cursor-pointer" onclick="switchView('feed')">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-tiktokRed via-purple-600 to-tiktokCyan flex items-center justify-center shadow-lg shadow-tiktokRed/20">
+          <svg class="w-5 h-5 text-white fill-current" viewBox="0 0 24 24">
+            <path d="M8 5v14l11-7z"/>
+          </svg>
+        </div>
+        <div>
+          <div class="flex items-center gap-1.5">
+            <span class="text-xl font-extrabold tracking-tight bg-gradient-to-r from-white via-slate-100 to-tiktokCyan bg-clip-text text-transparent">VibeStream</span>
+            <span class="text-xs">🇮🇩</span>
+          </div>
+          <p class="text-[10px] text-slate-400 font-medium">Shorts 9:16 & Video 16:9</p>
+        </div>
+      </div>
+
+      <!-- Center Action / View Switcher -->
+      <div class="hidden md:flex items-center bg-darkCard border border-darkBorder p-1 rounded-xl">
+        <button id="btn-feed" onclick="switchView('feed')" class="px-4 py-1.5 rounded-lg text-xs font-bold transition-all bg-tiktokRed text-white shadow">
+          📺 Feed Video
+        </button>
+        <button id="btn-creator" onclick="switchView('creator')" class="px-4 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-white transition-all">
+          🎨 Studio Kreator
+        </button>
+      </div>
+
+      <!-- Right Header Actions (Wallet, Notifications, DANA CTA) -->
+      <div class="flex items-center gap-2.5">
+        
+        <!-- Live Coin Wallet Badge -->
+        <button onclick="openCoinModal()" class="flex items-center gap-1.5 px-3 py-1.5 bg-darkCard hover:bg-darkSurface border border-yellow-500/30 rounded-xl transition-all">
+          <span class="text-sm">🪙</span>
+          <span id="header-coins" class="text-xs font-bold text-tiktokYellow">500 Koin</span>
+        </button>
+
+        <!-- Notification Center Bell with Real-time Badge -->
+        <button onclick="toggleNotificationModal()" class="relative p-2 bg-darkCard hover:bg-darkSurface border border-darkBorder rounded-xl transition-all" title="Pusat Notifikasi Kreator">
+          <svg class="w-5 h-5 text-tiktokCyan" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+          </svg>
+          <span id="header-unread-badge" class="absolute -top-1 -right-1 w-4 h-4 bg-tiktokRed text-white text-[9px] font-extrabold rounded-full flex items-center justify-center animate-pulse">2</span>
+        </button>
+
+        <!-- Tarik Saldo DANA CTA -->
+        <button onclick="openWithdrawModal()" class="hidden sm:flex items-center gap-1.5 px-3.5 py-1.5 bg-danaBlue hover:bg-blue-600 text-white rounded-xl text-xs font-bold shadow-md shadow-danaBlue/20 transition-all">
+          <span>💸</span>
+          <span id="header-dana-balance">Tarik DANA</span>
+        </button>
+
+      </div>
+    </div>
+
+    <!-- CATEGORY NAVIGATION BAR (Semua, Trending, Music, Gaming, Comedy, etc.) -->
+    <div class="border-t border-darkBorder/60 bg-darkCard/50">
+      <div class="max-w-7xl mx-auto px-4 py-2 overflow-x-auto custom-scroll flex items-center gap-2">
+        <button onclick="filterCategory('Semua', this)" class="cat-pill px-3.5 py-1 rounded-full text-xs font-bold bg-tiktokCyan text-black transition-all">
+          Semua
+        </button>
+        <button onclick="filterCategory('Trending', this)" class="cat-pill px-3.5 py-1 rounded-full text-xs font-medium text-slate-300 hover:text-white bg-darkSurface border border-darkBorder transition-all">
+          Trending 🔥
+        </button>
+        <button onclick="filterCategory('Music', this)" class="cat-pill px-3.5 py-1 rounded-full text-xs font-medium text-slate-300 hover:text-white bg-darkSurface border border-darkBorder transition-all">
+          Music 🎵
+        </button>
+        <button onclick="filterCategory('Gaming', this)" class="cat-pill px-3.5 py-1 rounded-full text-xs font-medium text-slate-300 hover:text-white bg-darkSurface border border-darkBorder transition-all">
+          Gaming 🎮
+        </button>
+        <button onclick="filterCategory('Comedy', this)" class="cat-pill px-3.5 py-1 rounded-full text-xs font-medium text-slate-300 hover:text-white bg-darkSurface border border-darkBorder transition-all">
+          Comedy 😂
+        </button>
+        <button onclick="filterCategory('Teknologi', this)" class="cat-pill px-3.5 py-1 rounded-full text-xs font-medium text-slate-300 hover:text-white bg-darkSurface border border-darkBorder transition-all">
+          Teknologi ⚡
+        </button>
+        <button onclick="filterCategory('Kuliner', this)" class="cat-pill px-3.5 py-1 rounded-full text-xs font-medium text-slate-300 hover:text-white bg-darkSurface border border-darkBorder transition-all">
+          Kuliner 🍳
+        </button>
+        <button onclick="filterCategory('Shorts', this)" class="cat-pill px-3.5 py-1 rounded-full text-xs font-medium text-slate-300 hover:text-white bg-darkSurface border border-darkBorder transition-all">
+          Shorts (9:16)
+        </button>
+        <button onclick="filterCategory('Panjang', this)" class="cat-pill px-3.5 py-1 rounded-full text-xs font-medium text-slate-300 hover:text-white bg-darkSurface border border-darkBorder transition-all">
+          Video Panjang (16:9)
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN APP CONTAINER -->
+  <main class="flex-1 max-w-7xl w-full mx-auto p-4 md:p-6">
+
+    <!-- ==================== VIEW 1: VIDEO FEED & SHORTS ==================== -->
+    <div id="view-feed" class="space-y-6">
+      
+      <!-- Feed Switcher (Shorts 9:16 vs Video Panjang 16:9) -->
+      <div class="flex items-center justify-between border-b border-darkBorder pb-3">
+        <div class="flex items-center gap-2">
+          <button id="tab-shorts" onclick="setFeedFormat('shorts')" class="px-4 py-1.5 rounded-xl text-xs font-bold bg-tiktokRed text-white transition-all">
+            📱 Shorts Vertikal (9:16)
+          </button>
+          <button id="tab-long" onclick="setFeedFormat('long')" class="px-4 py-1.5 rounded-xl text-xs font-semibold text-slate-400 hover:text-white bg-darkCard border border-darkBorder transition-all">
+            🎬 Video Panjang Widescreen (16:9)
+          </button>
+        </div>
+        <span class="text-xs text-slate-400 hidden sm:inline">Royalti Rp 0,05 / Aksi Penggemar Aktif ✨</span>
+      </div>
+
+      <!-- Shorts Phone Simulation Container -->
+      <div id="container-shorts" class="flex justify-center py-2">
+        <div class="relative w-full max-w-[380px] h-[640px] bg-black rounded-3xl overflow-hidden shadow-2xl border-2 border-darkBorder flex flex-col justify-between">
+          
+          <!-- Background Video / Simulation -->
+          <video id="shorts-video" class="absolute inset-0 w-full h-full object-cover" loop playsinline autoplay muted>
+            <source src="https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4" type="video/mp4" />
+          </video>
+          <div class="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/80 pointer-events-none"></div>
+
+          <!-- Top Overlay (Feed Type & Sound) -->
+          <div class="relative z-10 p-4 flex justify-between items-center text-xs">
+            <div class="flex gap-3 font-bold">
+              <span class="text-white border-b-2 border-tiktokCyan pb-0.5">Untuk Anda</span>
+              <span class="text-slate-400">Mengikuti</span>
+            </div>
+            <button onclick="toggleVideoSound()" class="p-2 bg-black/50 rounded-full text-white backdrop-blur">
+              <span id="sound-icon">🔇</span>
+            </button>
+          </div>
+
+          <!-- Bottom Overlay Video Meta & Action Buttons -->
+          <div class="relative z-10 p-4 flex items-end justify-between">
+            <div class="space-y-2 max-w-[75%]">
+              <div class="flex items-center gap-2">
+                <span id="shorts-creator-name" class="font-bold text-sm text-white">@siti_dance</span>
+                <span class="px-1.5 py-0.5 bg-tiktokCyan/20 text-tiktokCyan text-[10px] font-bold rounded">Terverifikasi</span>
+              </div>
+              <p id="shorts-caption" class="text-xs text-slate-200 line-clamp-2">
+                Trend dance viral 2026! Gerakan santuy diiringi musik remix nusantara 💃✨ #trending #dance #viral
+              </p>
+              <div class="flex items-center gap-2 text-[11px] text-slate-300">
+                <span>🎵 DJ Tabrak Masuk - Remix Nusantara</span>
+              </div>
+            </div>
+
+            <!-- Floating Vertical Action Column -->
+            <div class="flex flex-col items-center gap-3">
+              <!-- Creator Avatar -->
+              <div class="relative">
+                <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100" class="w-11 h-11 rounded-full border-2 border-tiktokRed object-cover" />
+                <button onclick="triggerFollowAction()" class="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-4 h-4 bg-tiktokRed text-white rounded-full flex items-center justify-center text-[10px] font-bold">+</button>
+              </div>
+
+              <!-- Like -->
+              <button onclick="triggerLikeAction()" class="flex flex-col items-center text-white hover:text-tiktokRed transition-colors">
+                <div class="w-10 h-10 bg-black/40 backdrop-blur rounded-full flex items-center justify-center">
+                  <span id="like-icon" class="text-lg">❤️</span>
+                </div>
+                <span id="like-count" class="text-[10px] font-bold mt-0.5">284.5K</span>
+              </button>
+
+              <!-- Comment -->
+              <button onclick="triggerCommentAction()" class="flex flex-col items-center text-white">
+                <div class="w-10 h-10 bg-black/40 backdrop-blur rounded-full flex items-center justify-center">
+                  <span class="text-lg">💬</span>
+                </div>
+                <span class="text-[10px] font-bold mt-0.5">4.1K</span>
+              </button>
+
+              <!-- Sawer DANA P2P -->
+              <button onclick="openDanaP2PModal()" class="flex flex-col items-center text-tiktokYellow hover:scale-105 transition-transform">
+                <div class="w-10 h-10 bg-yellow-500/20 border border-tiktokYellow/60 backdrop-blur rounded-full flex items-center justify-center shadow-lg">
+                  <span class="text-lg">💸</span>
+                </div>
+                <span class="text-[9px] font-extrabold mt-0.5 bg-yellow-400 text-black px-1 rounded">SAWER</span>
+              </button>
+
+              <!-- Send VibeGift -->
+              <button onclick="openSendGiftModal()" class="flex flex-col items-center text-tiktokCyan hover:scale-105 transition-transform">
+                <div class="w-10 h-10 bg-cyan-500/20 border border-tiktokCyan/60 backdrop-blur rounded-full flex items-center justify-center">
+                  <span class="text-lg">🎁</span>
+                </div>
+                <span class="text-[10px] font-bold mt-0.5">Gift</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Long Video Grid (16:9) Container -->
+      <div id="container-long" class="hidden">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="long-video-grid">
+          <!-- Videos injected via JS -->
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ==================== VIEW 2: CREATOR DASHBOARD ==================== -->
+    <div id="view-creator" class="hidden space-y-6">
+      
+      <!-- Creator Studio Header Banner -->
+      <div class="p-6 rounded-2xl bg-gradient-to-r from-purple-950/60 via-darkCard to-cyan-950/40 border border-darkBorder flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div class="flex items-center gap-4">
+          <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200" class="w-14 h-14 rounded-2xl border-2 border-tiktokCyan object-cover" />
+          <div>
+            <div class="flex items-center gap-2">
+              <h2 class="text-lg font-bold text-white">Studio Kreator VibeStream</h2>
+              <span class="px-2 py-0.5 bg-tiktokCyan/20 text-tiktokCyan text-[10px] font-extrabold rounded-md">PRO VERIFIED</span>
+            </div>
+            <p class="text-xs text-slate-400">Aldi Prasetya • Akun DANA: <span class="text-slate-200 font-semibold">0812-9876-5432</span></p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <button onclick="openWithdrawModal()" class="px-4 py-2 bg-danaBlue hover:bg-blue-600 text-white rounded-xl text-xs font-bold transition-all shadow-lg shadow-danaBlue/20">
+            💸 Tarik ke DANA (0% Admin)
+          </button>
+          <button onclick="toggleNotificationModal()" class="px-4 py-2 bg-darkSurface hover:bg-darkBorder border border-tiktokCyan/40 text-tiktokCyan rounded-xl text-xs font-bold transition-all">
+            🔔 Notifikasi Real-time
+          </button>
+        </div>
+      </div>
+
+      <!-- 3 Key Earnings Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        
+        <!-- Total Gross -->
+        <div class="p-5 rounded-2xl bg-darkCard border border-yellow-500/40 relative overflow-hidden">
+          <div class="flex justify-between items-start">
+            <span class="text-xs text-slate-400 font-semibold">Total Pendapatan Kreator</span>
+            <span class="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 font-bold">+24.8% vs mgg lalu</span>
+          </div>
+          <div class="text-3xl font-extrabold text-tiktokYellow mt-2" id="dash-total-earnings">Rp 245.000</div>
+          <p class="text-[11px] text-slate-400 mt-1">Sawer DANA + Royalti Fans + VibeCoins</p>
+        </div>
+
+        <!-- Sawer DANA P2P -->
+        <div class="p-5 rounded-2xl bg-darkCard border border-darkBorder">
+          <div class="flex justify-between items-start">
+            <span class="text-xs text-slate-400 font-semibold">Saweran DANA P2P (Langsung)</span>
+            <span class="text-[10px] px-2 py-0.5 rounded-full bg-blue-500/20 text-danaBlue font-bold">100% Bersih</span>
+          </div>
+          <div class="text-2xl font-bold text-white mt-2" id="dash-sawer-balance">Rp 175.000</div>
+          <p class="text-[11px] text-slate-400 mt-1">14x transaksi sawer via barcode</p>
+        </div>
+
+        <!-- Royalti Interaksi Penggemar -->
+        <div class="p-5 rounded-2xl bg-darkCard border border-darkBorder">
+          <div class="flex justify-between items-start">
+            <span class="text-xs text-slate-400 font-semibold">Royalti Interaksi (@Rp 0,05)</span>
+            <span class="text-[10px] px-2 py-0.5 rounded-full bg-tiktokCyan/20 text-tiktokCyan font-bold">Apresiasi Fans</span>
+          </div>
+          <div class="text-2xl font-bold text-tiktokCyan mt-2" id="dash-royalty-balance">Rp 30.000</div>
+          <p class="text-[11px] text-slate-400 mt-1">Like, Komen, Share, Simpan, Follow</p>
+        </div>
+
+      </div>
+
+      <!-- RECHARTS 30-DAY EARNINGS LINE CHART SECTION -->
+      <div class="p-6 rounded-2xl bg-darkCard border border-tiktokCyan/30 space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div>
+            <div class="flex items-center gap-2">
+              <h3 class="text-base font-bold text-white">Tren Pendapatan 30 Hari Terakhir</h3>
+              <span class="text-[10px] font-bold px-2 py-0.5 bg-tiktokCyan/10 text-tiktokCyan rounded border border-tiktokCyan/30">Recharts Style</span>
+            </div>
+            <p class="text-xs text-slate-400">Kurva interaktif dengan interpolasi Monotone Cubic Bezier & gradien area</p>
+          </div>
+          <div class="text-sm font-extrabold text-tiktokYellow" id="chart-30d-total">Total: Rp 785.000</div>
+        </div>
+
+        <!-- Metric Mini Bar -->
+        <div class="grid grid-cols-3 gap-2 p-3 bg-darkSurface rounded-xl text-center text-xs">
+          <div>
+            <span class="text-[10px] text-slate-400 block">Rata-rata Harian</span>
+            <span class="font-bold text-tiktokCyan">Rp 26.166</span>
+          </div>
+          <div>
+            <span class="text-[10px] text-slate-400 block">Puncak Tertinggi</span>
+            <span class="font-bold text-tiktokYellow">Rp 68.000</span>
+          </div>
+          <div>
+            <span class="text-[10px] text-slate-400 block">Hari Puncak</span>
+            <span class="font-bold text-white">Hari ke-22 (22 Okt)</span>
+          </div>
+        </div>
+
+        <!-- Interactive HTML5 Canvas Chart (Recharts Equivalent) -->
+        <div class="relative w-full h-56 bg-darkBg/60 rounded-xl p-2 border border-darkBorder flex items-center justify-center">
+          <canvas id="recharts-canvas" class="w-full h-full cursor-crosshair"></canvas>
+          <div id="chart-tooltip" class="absolute pointer-events-none hidden px-3 py-1.5 bg-darkCard border border-tiktokCyan rounded-lg text-xs shadow-xl backdrop-blur">
+            <span id="tooltip-date" class="font-bold text-tiktokCyan block text-[11px]"></span>
+            <span id="tooltip-val" class="font-extrabold text-tiktokYellow text-sm"></span>
+          </div>
+        </div>
+
+        <!-- Chart Legend -->
+        <div class="flex items-center justify-center gap-6 text-xs text-slate-400 pt-1">
+          <div class="flex items-center gap-2">
+            <div class="w-3 h-3 rounded-full bg-tiktokCyan"></div>
+            <span>Total Pendapatan Harian</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <div class="w-3 h-1 rounded bg-tiktokYellow"></div>
+            <span>Sawer DANA P2P</span>
+          </div>
+          <span class="text-[11px] text-slate-500">Arahkan kursor / sentuh untuk rincian harian</span>
+        </div>
+      </div>
+
+      <!-- Content Management Section -->
+      <div class="p-6 rounded-2xl bg-darkCard border border-darkBorder space-y-4">
+        <div class="flex items-center justify-between">
+          <h3 class="text-base font-bold text-white">Kelola Konten Saya</h3>
+          <button onclick="alert('Fitur unggah video baru siap digunakan!')" class="px-3 py-1.5 bg-tiktokRed text-white rounded-lg text-xs font-bold">+ Upload Video</button>
+        </div>
+
+        <div class="space-y-3" id="creator-video-list">
+          <!-- Injected via JS -->
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- ==================== MODAL 1: REAL-TIME NOTIFICATION CENTER ==================== -->
+  <div id="modal-notif" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-darkSurface border border-tiktokCyan/50 rounded-2xl max-w-lg w-full max-h-[85vh] flex flex-col shadow-2xl">
+      
+      <!-- Modal Header -->
+      <div class="p-4 border-b border-darkBorder flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-lg bg-tiktokCyan/20 text-tiktokCyan flex items-center justify-center">
+            🔔
+          </div>
+          <div>
+            <h3 class="text-sm font-bold text-white flex items-center gap-2">
+              Pusat Notifikasi Kreator
+              <span class="px-1.5 py-0.2 bg-tiktokRed text-white text-[9px] font-extrabold rounded-full">REAL-TIME</span>
+            </h3>
+            <p class="text-[11px] text-slate-400">Pemberitahuan Hadiah & Royalti Langsung</p>
+          </div>
+        </div>
+        <button onclick="toggleNotificationModal()" class="text-slate-400 hover:text-white p-1">✕</button>
+      </div>
+
+      <!-- Action Bar (Simulate Live Event & Mark Read) -->
+      <div class="p-3 bg-darkCard/80 border-b border-darkBorder flex items-center justify-between text-xs">
+        <button onclick="markAllNotificationsRead()" class="text-tiktokCyan font-semibold hover:underline">
+          ✓ Tandai Sudah Dibaca
+        </button>
+        <button onclick="simulateIncomingAlert()" class="px-3 py-1 bg-tiktokYellow text-black font-bold rounded-lg hover:bg-yellow-400 flex items-center gap-1 shadow">
+          <span>⚡</span>
+          <span>Uji Notifikasi Real-time</span>
+        </button>
+      </div>
+
+      <!-- Notification List -->
+      <div class="p-4 overflow-y-auto space-y-3 flex-1 custom-scroll" id="notification-items-container">
+        <!-- Injected via JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL 2: DANA P2P SAWER ==================== -->
+  <div id="modal-dana-sawer" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-darkSurface border border-danaBlue/60 rounded-2xl max-w-md w-full p-6 text-center shadow-2xl space-y-4">
+      <div class="flex justify-between items-center">
+        <div class="flex items-center gap-2">
+          <span class="text-xl">💸</span>
+          <h3 class="font-bold text-white text-base">Sawer DANA P2P Langsung</h3>
+        </div>
+        <button onclick="closeDanaP2PModal()" class="text-slate-400 hover:text-white">✕</button>
+      </div>
+
+      <div class="p-4 bg-white rounded-xl mx-auto w-56 h-56 flex items-center justify-center border-4 border-danaBlue">
+        <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=DANA-P2P-SAWER-081298765432" alt="QRIS DANA" class="w-full h-full" />
+      </div>
+
+      <div class="text-xs text-slate-300">
+        <p class="font-bold text-danaBlue">0812-9876-5432 (ALDI PRASETYA)</p>
+        <p class="text-slate-400 mt-1">100% Masuk ke akun DANA kreator tanpa potongan birokrasi!</p>
+      </div>
+
+      <div class="flex gap-2">
+        <button onclick="executeP2PSawer(10000)" class="flex-1 py-2 bg-darkCard hover:bg-darkBorder border border-darkBorder rounded-xl text-xs font-bold text-white">+Rp 10.000</button>
+        <button onclick="executeP2PSawer(25000)" class="flex-1 py-2 bg-darkCard hover:bg-darkBorder border border-darkBorder rounded-xl text-xs font-bold text-tiktokYellow">+Rp 25.000</button>
+        <button onclick="executeP2PSawer(50000)" class="flex-1 py-2 bg-danaBlue hover:bg-blue-600 rounded-xl text-xs font-bold text-white">+Rp 50.000</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL 3: PENARIKAN SALDO DANA ==================== -->
+  <div id="modal-withdraw" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-darkSurface border border-danaBlue/60 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
+      <div class="flex justify-between items-center">
+        <h3 class="font-bold text-white text-base">Tarik Saldo ke DANA Pribadi</h3>
+        <button onclick="closeWithdrawModal()" class="text-slate-400 hover:text-white">✕</button>
+      </div>
+
+      <div class="p-4 bg-darkCard rounded-xl border border-darkBorder space-y-2">
+        <div class="flex justify-between text-xs text-slate-400">
+          <span>Saldo Siap Tarik:</span>
+          <span class="font-bold text-tiktokYellow" id="modal-withdrawable">Rp 175.000</span>
+        </div>
+        <div class="flex justify-between text-xs text-slate-400">
+          <span>Biaya Admin:</span>
+          <span class="font-bold text-emerald-400">0% (Bebas Potongan)</span>
+        </div>
+        <div class="flex justify-between text-xs text-slate-400">
+          <span>Tujuan DANA:</span>
+          <span class="font-bold text-white">0812-9876-5432</span>
+        </div>
+      </div>
+
+      <button onclick="confirmWithdrawal()" class="w-full py-3 bg-danaBlue hover:bg-blue-600 rounded-xl text-xs font-bold text-white shadow-lg transition-all">
+        Konfirmasi Penarikan Instan ke DANA
+      </button>
+    </div>
+  </div>
+
+  <!-- JAVASCRIPT APPLICATION LOGIC -->
+  <script>
+    // App State
+    let coinBalance = 500;
+    let sawerBalance = 175000;
+    let royaltyBalance = 30000;
+    let unreadNotifs = 2;
+
+    const sampleNotifications = [
+      {
+        id: 'n1',
+        title: 'Menerima Hadiah VibeGift!',
+        desc: 'Bella Poarch mengirim Paus Megah (100 Koin) di video Anda',
+        sender: 'Bella Poarch',
+        avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100',
+        money: 800000,
+        time: '2m lalu',
+        read: false,
+        emoji: '🐋'
+      },
+      {
+        id: 'n2',
+        title: 'Saweran DANA P2P Masuk!',
+        desc: 'Fahri Danz menyawer Rp 50.000 langsung via Barcode DANA',
+        sender: 'Fahri Danz',
+        avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100',
+        money: 50000,
+        time: '15m lalu',
+        read: false,
+        emoji: '💸'
+      },
+      {
+        id: 'n3',
+        title: 'Royalti Suka Penggemar',
+        desc: 'Clarissa menyukai video kuliner Anda',
+        sender: 'Clarissa M',
+        avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100',
+        money: 0.05,
+        time: '32m lalu',
+        read: true,
+        emoji: '❤️'
+      },
+      {
+        id: 'n4',
+        title: 'Pengikut Baru Bergabung',
+        desc: 'Budi Santoso mulai mengikuti saluran Anda',
+        sender: 'Budi Santoso',
+        avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100',
+        money: 0.05,
+        time: '1j lalu',
+        read: true,
+        emoji: '👤'
+      }
+    ];
+
+    const longVideos = [
+      {
+        id: 'lv1',
+        title: 'Tutorial Lengkap Web & Mobile Modern 2026: Arsitektur Scalable & Clean UI',
+        creator: 'Tech Academy Indonesia',
+        category: 'Teknologi',
+        views: '380K',
+        duration: '24:15',
+        thumb: 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=800'
+      },
+      {
+        id: 'lv2',
+        title: 'Eksplorasi Keajaiban Bawah Laut Raja Ampat Papua: Dokumenter 4K Ultra HD',
+        creator: 'Bima Traveler',
+        category: 'Wisata',
+        views: '920K',
+        duration: '18:40',
+        thumb: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=800'
+      },
+      {
+        id: 'lv3',
+        title: 'Resep Rahasia Rendang Daging Sapi Otentik Padang: Teknik Memasak 8 Jam',
+        creator: 'Chef Rendy',
+        category: 'Kuliner',
+        views: '1.25M',
+        duration: '15:30',
+        thumb: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=800'
+      },
+      {
+        id: 'lv4',
+        title: 'Turnamen Esports Akbar: Final Match Mobile Legends 2026 Highlight',
+        creator: 'Gita Gamer',
+        category: 'Gaming',
+        views: '1.85M',
+        duration: '28:10',
+        thumb: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=800'
+      }
+    ];
+
+    // Navigation Switcher
+    function switchView(view) {
+      const feedView = document.getElementById('view-feed');
+      const creatorView = document.getElementById('view-creator');
+      const btnFeed = document.getElementById('btn-feed');
+      const btnCreator = document.getElementById('btn-creator');
+
+      if (view === 'feed') {
+        feedView.classList.remove('hidden');
+        creatorView.classList.add('hidden');
+        btnFeed.className = 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all bg-tiktokRed text-white shadow';
+        btnCreator.className = 'px-4 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-white transition-all';
+      } else {
+        feedView.classList.add('hidden');
+        creatorView.classList.remove('hidden');
+        btnCreator.className = 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all bg-tiktokCyan text-black shadow';
+        btnFeed.className = 'px-4 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-white transition-all';
+        renderRechartsLineChart();
+      }
+    }
+
+    // Set Format (Shorts vs Long)
+    function setFeedFormat(fmt) {
+      const cShorts = document.getElementById('container-shorts');
+      const cLong = document.getElementById('container-long');
+      const tabShorts = document.getElementById('tab-shorts');
+      const tabLong = document.getElementById('tab-long');
+
+      if (fmt === 'shorts') {
+        cShorts.classList.remove('hidden');
+        cLong.classList.add('hidden');
+        tabShorts.className = 'px-4 py-1.5 rounded-xl text-xs font-bold bg-tiktokRed text-white transition-all';
+        tabLong.className = 'px-4 py-1.5 rounded-xl text-xs font-semibold text-slate-400 hover:text-white bg-darkCard border border-darkBorder transition-all';
+      } else {
+        cShorts.classList.add('hidden');
+        cLong.classList.remove('hidden');
+        tabLong.className = 'px-4 py-1.5 rounded-xl text-xs font-bold bg-tiktokCyan text-black transition-all';
+        tabShorts.className = 'px-4 py-1.5 rounded-xl text-xs font-semibold text-slate-400 hover:text-white bg-darkCard border border-darkBorder transition-all';
+      }
+    }
+
+    // Filter Categories
+    function filterCategory(cat, el) {
+      document.querySelectorAll('.cat-pill').forEach(btn => {
+        btn.className = 'cat-pill px-3.5 py-1 rounded-full text-xs font-medium text-slate-300 hover:text-white bg-darkSurface border border-darkBorder transition-all';
+      });
+      el.className = 'cat-pill px-3.5 py-1 rounded-full text-xs font-bold bg-tiktokCyan text-black transition-all';
+
+      if (cat === 'Shorts') {
+        setFeedFormat('shorts');
+      } else if (cat === 'Panjang') {
+        setFeedFormat('long');
+      } else {
+        renderLongVideos(cat);
+      }
+    }
+
+    function renderLongVideos(filter = 'Semua') {
+      const grid = document.getElementById('long-video-grid');
+      grid.innerHTML = '';
+      
+      const filtered = filter === 'Semua' ? longVideos : longVideos.filter(v => v.category.toLowerCase().includes(filter.toLowerCase()) || filter.toLowerCase().includes(v.category.toLowerCase()));
+
+      filtered.forEach(v => {
+        grid.innerHTML += `
+          <div class="bg-darkCard rounded-2xl overflow-hidden border border-darkBorder hover:border-tiktokCyan/50 transition-all group">
+            <div class="relative aspect-video bg-black overflow-hidden">
+              <img src="${v.thumb}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+              <span class="absolute bottom-2 right-2 px-1.5 py-0.5 bg-black/80 rounded text-[10px] font-bold text-white">${v.duration}</span>
+              <span class="absolute top-2 left-2 px-2 py-0.5 bg-tiktokRed text-white text-[9px] font-extrabold rounded">16:9</span>
+            </div>
+            <div class="p-4 space-y-2">
+              <span class="text-[10px] font-bold text-tiktokCyan">${v.category}</span>
+              <h4 class="text-sm font-bold text-white line-clamp-2">${v.title}</h4>
+              <div class="flex justify-between items-center text-xs text-slate-400 pt-2 border-t border-darkBorder">
+                <span>${v.creator}</span>
+                <span>👁️ ${v.views}</span>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    // Video Sound Toggle
+    function toggleVideoSound() {
+      const vid = document.getElementById('shorts-video');
+      const icon = document.getElementById('sound-icon');
+      vid.muted = !vid.muted;
+      icon.innerText = vid.muted ? '🔇' : '🔊';
+    }
+
+    // Interactive Like with Rp 0.05 Royalty
+    function triggerLikeAction() {
+      royaltyBalance += 0.05;
+      updateBalances();
+      const notif = {
+        id: 'n_' + Date.now(),
+        title: 'Royalti Suka Penggemar (+Rp 0,05)',
+        desc: 'Penggemar baru saja menyukai video Shorts Anda',
+        sender: 'Penggemar',
+        avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100',
+        money: 0.05,
+        time: 'Baru saja',
+        read: false,
+        emoji: '❤️'
+      };
+      sampleNotifications.unshift(notif);
+      unreadNotifs++;
+      updateNotificationUI();
+      alert('❤️ Disukai! Apresiasi penggemar Rp 0,05 otomatis dicatat ke saldo royalti kreator.');
+    }
+
+    function triggerCommentAction() {
+      royaltyBalance += 0.05;
+      updateBalances();
+      alert('💬 Komentar terkirim! Royalti penggemar Rp 0,05 dicatat.');
+    }
+
+    function triggerFollowAction() {
+      royaltyBalance += 0.05;
+      updateBalances();
+      alert('➕ Mengikuti kreator! Apresiasi royalti Rp 0,05 dicatat.');
+    }
+
+    // Modals
+    function toggleNotificationModal() {
+      const m = document.getElementById('modal-notif');
+      m.classList.toggle('hidden');
+      updateNotificationUI();
+    }
+
+    function openDanaP2PModal() {
+      document.getElementById('modal-dana-sawer').classList.remove('hidden');
+    }
+    function closeDanaP2PModal() {
+      document.getElementById('modal-dana-sawer').classList.add('hidden');
+    }
+
+    function openWithdrawModal() {
+      document.getElementById('modal-withdraw').classList.remove('hidden');
+    }
+    function closeWithdrawModal() {
+      document.getElementById('modal-withdraw').classList.add('hidden');
+    }
+
+    function executeP2PSawer(amount) {
+      sawerBalance += amount;
+      updateBalances();
+      closeDanaP2PModal();
+      sampleNotifications.unshift({
+        id: 'n_' + Date.now(),
+        title: 'Saweran DANA P2P Masuk!',
+        desc: `Penggemar menyawer Rp ${amount.toLocaleString('id-ID')} langsung ke DANA Anda`,
+        sender: 'Sultan Penonton',
+        avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100',
+        money: amount,
+        time: 'Baru saja',
+        read: false,
+        emoji: '💸'
+      });
+      unreadNotifs++;
+      updateNotificationUI();
+      alert(`🎉 Saweran DANA P2P Rp ${amount.toLocaleString('id-ID')} berhasil dikirim langsung ke kreator tanpa potongan!`);
+    }
+
+    function openSendGiftModal() {
+      const cost = 10;
+      if (coinBalance < cost) {
+        alert('Koin tidak mencukupi! Silakan isi ulang koin.');
+        return;
+      }
+      coinBalance -= cost;
+      const creatorMoney = cost * 8000;
+      sawerBalance += creatorMoney;
+      updateBalances();
+      sampleNotifications.unshift({
+        id: 'n_' + Date.now(),
+        title: 'Hadiah Mawar VibeGift Diterima!',
+        desc: `Penonton mengirim Mawar Merah (10 Koin) bernilai Rp ${creatorMoney.toLocaleString('id-ID')}`,
+        sender: 'Fan Setia',
+        avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100',
+        money: creatorMoney,
+        time: 'Baru saja',
+        read: false,
+        emoji: '🌹'
+      });
+      unreadNotifs++;
+      updateNotificationUI();
+      alert(`🎁 Gift Mawar (10 Koin) terkirim! Kreator menerima +Rp ${creatorMoney.toLocaleString('id-ID')}.`);
+    }
+
+    function simulateIncomingAlert() {
+      const gifts = [
+        { name: 'Singa Emas', coins: 500, emoji: '🦁', money: 4000000 },
+        { name: 'Paus Megah', coins: 100, emoji: '🐋', money: 800000 },
+        { name: 'Sawer DANA P2P', coins: 0, emoji: '💸', money: 50000 }
+      ];
+      const g = gifts[Math.floor(Math.random() * gifts.length)];
+      sawerBalance += g.money;
+      updateBalances();
+      sampleNotifications.unshift({
+        id: 'n_' + Date.now(),
+        title: g.coins > 0 ? `Hadiah Akbar ${g.name} Diterima!` : 'Saweran DANA P2P Masuk!',
+        desc: `Sultan Penonton mengirim ${g.name} (+Rp ${g.money.toLocaleString('id-ID')})`,
+        sender: 'Sultan Nusantara',
+        avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100',
+        money: g.money,
+        time: 'Baru saja',
+        read: false,
+        emoji: g.emoji
+      });
+      unreadNotifs++;
+      updateNotificationUI();
+    }
+
+    function markAllNotificationsRead() {
+      sampleNotifications.forEach(n => n.read = true);
+      unreadNotifs = 0;
+      updateNotificationUI();
+    }
+
+    function updateBalances() {
+      const total = sawerBalance + royaltyBalance + (coinBalance * 8000);
+      document.getElementById('header-coins').innerText = `${coinBalance} Koin`;
+      document.getElementById('header-dana-balance').innerText = `DANA Rp ${sawerBalance.toLocaleString('id-ID')}`;
+      document.getElementById('dash-total-earnings').innerText = `Rp ${total.toLocaleString('id-ID')}`;
+      document.getElementById('dash-sawer-balance').innerText = `Rp ${sawerBalance.toLocaleString('id-ID')}`;
+      document.getElementById('dash-royalty-balance').innerText = `Rp ${royaltyBalance.toLocaleString('id-ID')}`;
+      document.getElementById('modal-withdrawable').innerText = `Rp ${sawerBalance.toLocaleString('id-ID')}`;
+    }
+
+    function updateNotificationUI() {
+      const badge = document.getElementById('header-unread-badge');
+      if (unreadNotifs > 0) {
+        badge.innerText = unreadNotifs;
+        badge.classList.remove('hidden');
+      } else {
+        badge.classList.add('hidden');
+      }
+
+      const container = document.getElementById('notification-items-container');
+      container.innerHTML = '';
+      sampleNotifications.forEach(n => {
+        const moneyText = n.money < 1 ? `+Rp ${n.money.toFixed(2)}` : `+Rp ${n.money.toLocaleString('id-ID')}`;
+        container.innerHTML += `
+          <div class="p-3 rounded-xl ${n.read ? 'bg-darkCard' : 'bg-darkCard/90 border border-tiktokCyan/50'} flex gap-3 items-center">
+            <div class="relative w-10 h-10 shrink-0">
+              <img src="${n.avatar}" class="w-full h-full rounded-full object-cover" />
+              <span class="absolute -bottom-1 -right-1 text-xs">${n.emoji}</span>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex justify-between items-center">
+                <h4 class="text-xs font-bold text-white truncate">${n.title}</h4>
+                <span class="text-[10px] text-slate-400 shrink-0">${n.time}</span>
+              </div>
+              <p class="text-[11px] text-slate-300 truncate">${n.desc}</p>
+              <div class="mt-1 flex items-center gap-2">
+                <span class="px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 font-bold text-[10px]">${moneyText}</span>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    function confirmWithdrawal() {
+      if (sawerBalance <= 0) {
+        alert('Saldo sawer kosong.');
+        return;
+      }
+      alert(`✅ Penarikan Rp ${sawerBalance.toLocaleString('id-ID')} ke akun DANA 0812-9876-5432 berhasil diproses secara instan (0% Biaya Admin)!`);
+      sawerBalance = 0;
+      updateBalances();
+      closeWithdrawModal();
+    }
+
+    // RECHARTS-STYLE CANVAS LINE CHART
+    function renderRechartsLineChart() {
+      const canvas = document.getElementById('recharts-canvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const dpr = window.devicePixelRatio || 1;
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = rect.width * dpr;
+      canvas.height = rect.height * dpr;
+      ctx.scale(dpr, dpr);
+
+      const w = rect.width;
+      const h = rect.height;
+
+      // 30 Days Data
+      const points = [];
+      for (let i = 1; i <= 30; i++) {
+        let base = 12000 + i * 1100;
+        let spike = (i % 7 === 0 || i === 22 || i === 28) ? 24000 : 0;
+        let total = base + spike + ((i * 37) % 7) * 1500;
+        points.push({ day: i, val: total });
+      }
+
+      const maxVal = Math.max(...points.map(p => p.val)) * 1.15;
+      const minVal = 0;
+
+      // Draw Grid Lines (Dashed)
+      ctx.strokeStyle = '#273142';
+      ctx.setLineDash([4, 4]);
+      for (let y = 0.2; y <= 0.8; y += 0.3) {
+        ctx.beginPath();
+        ctx.moveTo(0, h * y);
+        ctx.lineTo(w, h * y);
+        ctx.stroke();
+      }
+      ctx.setLineDash([]);
+
+      const stepX = w / (points.length - 1);
+      const coords = points.map((p, idx) => {
+        const x = idx * stepX;
+        const norm = (p.val - minVal) / (maxVal - minVal);
+        const y = h - (norm * (h * 0.8)) - 15;
+        return { x, y, val: p.val, day: p.day };
+      });
+
+      // Gradient Area
+      const grad = ctx.createLinearGradient(0, 0, 0, h);
+      grad.addColorStop(0, 'rgba(0, 229, 255, 0.35)');
+      grad.addColorStop(1, 'rgba(0, 229, 255, 0.0)');
+
+      ctx.beginPath();
+      ctx.moveTo(coords[0].x, h);
+      ctx.lineTo(coords[0].x, coords[0].y);
+      for (let i = 0; i < coords.length - 1; i++) {
+        const cx = (coords[i].x + coords[i + 1].x) / 2;
+        ctx.bezierCurveTo(cx, coords[i].y, cx, coords[i + 1].y, coords[i + 1].x, coords[i + 1].y);
+      }
+      ctx.lineTo(coords[coords.length - 1].x, h);
+      ctx.closePath();
+      ctx.fillStyle = grad;
+      ctx.fill();
+
+      // Smooth Stroke Line
+      ctx.beginPath();
+      ctx.moveTo(coords[0].x, coords[0].y);
+      for (let i = 0; i < coords.length - 1; i++) {
+        const cx = (coords[i].x + coords[i + 1].x) / 2;
+        ctx.bezierCurveTo(cx, coords[i].y, cx, coords[i + 1].y, coords[i + 1].x, coords[i + 1].y);
+      }
+      ctx.strokeStyle = '#00E5FF';
+      ctx.lineWidth = 2.5;
+      ctx.stroke();
+
+      // Interactive mouse hover
+      canvas.onmousemove = function(e) {
+        const box = canvas.getBoundingClientRect();
+        const mx = e.clientX - box.left;
+        const idx = Math.min(Math.max(0, Math.round(mx / stepX)), coords.length - 1);
+        const c = coords[idx];
+
+        const tt = document.getElementById('chart-tooltip');
+        tt.style.left = `${Math.min(w - 140, Math.max(10, c.x - 60))}px`;
+        tt.style.top = `${Math.max(10, c.y - 45)}px`;
+        document.getElementById('tooltip-date').innerText = `Hari ke-${c.day} • ${c.day} Okt 2026`;
+        document.getElementById('tooltip-val').innerText = `Rp ${c.val.toLocaleString('id-ID')}`;
+        tt.classList.remove('hidden');
+      };
+      canvas.onmouseleave = function() {
+        document.getElementById('chart-tooltip').classList.add('hidden');
+      };
+    }
+
+    // Initialize App
+    window.addEventListener('DOMContentLoaded', () => {
+      renderLongVideos();
+      updateBalances();
+      updateNotificationUI();
+    });
+  </script>
+</body>
+</html>
