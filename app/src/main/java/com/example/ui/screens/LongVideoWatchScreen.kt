@@ -717,7 +717,7 @@ fun LongVideoWatchScreen(
 
                 Spacer(modifier = Modifier.height(10.dp))
 
-                // Fan Interaction Monetization Info (@ Rp 0,05 per action)
+                // Community Engagement Info
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -732,17 +732,17 @@ fun LongVideoWatchScreen(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier.weight(1f)
                     ) {
-                        Text(text = "💎", fontSize = 12.sp)
+                        Text(text = "✨", fontSize = 12.sp)
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
-                            text = "Apresiasi Penggemar: Rp 0,05 / aksi (Like, Komen, Share, Simpan)",
+                            text = "Interaksi Komunitas: Like, Komen, Share & Simpan",
                             color = TikTokCyan,
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Medium
                         )
                     }
                     Text(
-                        text = video.formattedFanInteractionValue(),
+                        text = "${video.likesCount} suka",
                         color = TikTokYellow,
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Bold

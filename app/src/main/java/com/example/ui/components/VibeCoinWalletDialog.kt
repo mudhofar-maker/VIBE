@@ -645,20 +645,20 @@ fun VibeCoinWalletDialog(
                                                 Text(text = "💎", fontSize = 14.sp)
                                                 Spacer(modifier = Modifier.width(6.dp))
                                                 Text(
-                                                    text = "Tarif Interaksi Penggemar",
+                                                    text = "Interaksi Komunitas Penggemar",
                                                     color = TikTokCyan,
                                                     fontSize = 12.sp,
                                                     fontWeight = FontWeight.Bold
                                                 )
                                             }
                                             Text(
-                                                text = "Rp 0,05 / aksi",
-                                                color = TikTokYellow,
+                                                text = "Organik",
+                                                color = TikTokCyan,
                                                 fontSize = 11.sp,
                                                 fontWeight = FontWeight.Bold,
                                                 modifier = Modifier
                                                     .clip(RoundedCornerShape(6.dp))
-                                                    .background(TikTokYellow.copy(alpha = 0.15f))
+                                                    .background(TikTokCyan.copy(alpha = 0.15f))
                                                     .padding(horizontal = 6.dp, vertical = 2.dp)
                                             )
                                         }
@@ -666,7 +666,7 @@ fun VibeCoinWalletDialog(
                                         Spacer(modifier = Modifier.height(6.dp))
 
                                         Text(
-                                            text = "Setiap aktivitas penggemar (Share, Like, Komen, Simpan) mempunyai harga Rp 0,05:",
+                                            text = "Aktivitas penggemar (Share, Like, Komen, Simpan) mendukung kreator secara organik tanpa nilai koin.",
                                             color = TextSecondary,
                                             fontSize = 11.sp,
                                             lineHeight = 15.sp
@@ -687,42 +687,35 @@ fun VibeCoinWalletDialog(
                                                 horizontalArrangement = Arrangement.SpaceBetween
                                             ) {
                                                 Text("❤️ Suka (Like) Penggemar:", color = TextMuted, fontSize = 10.sp)
-                                                Text("Rp 0,05 / like", color = TextPrimary, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                                                Text("Organik (Tanpa Koin)", color = TextPrimary, fontSize = 10.sp, fontWeight = FontWeight.Bold)
                                             }
                                             Row(
                                                 modifier = Modifier.fillMaxWidth(),
                                                 horizontalArrangement = Arrangement.SpaceBetween
                                             ) {
                                                 Text("💬 Komentar Penggemar:", color = TextMuted, fontSize = 10.sp)
-                                                Text("Rp 0,05 / komen", color = TextPrimary, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                                                Text("Organik (Tanpa Koin)", color = TextPrimary, fontSize = 10.sp, fontWeight = FontWeight.Bold)
                                             }
                                             Row(
                                                 modifier = Modifier.fillMaxWidth(),
                                                 horizontalArrangement = Arrangement.SpaceBetween
                                             ) {
                                                 Text("↗️ Bagikan (Share) Penggemar:", color = TextMuted, fontSize = 10.sp)
-                                                Text("Rp 0,05 / share", color = TextPrimary, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                                                Text("Organik (Tanpa Koin)", color = TextPrimary, fontSize = 10.sp, fontWeight = FontWeight.Bold)
                                             }
                                             Row(
                                                 modifier = Modifier.fillMaxWidth(),
                                                 horizontalArrangement = Arrangement.SpaceBetween
                                             ) {
                                                 Text("🔖 Simpan (Bookmark) Penggemar:", color = TextMuted, fontSize = 10.sp)
-                                                Text("Rp 0,05 / simpan", color = TextPrimary, fontSize = 10.sp, fontWeight = FontWeight.Bold)
-                                            }
-                                            Row(
-                                                modifier = Modifier.fillMaxWidth(),
-                                                horizontalArrangement = Arrangement.SpaceBetween
-                                            ) {
-                                                Text("➕ Ikuti (Follow) Penggemar:", color = TextMuted, fontSize = 10.sp)
-                                                Text("Rp 0,05 / follow", color = TextPrimary, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                                                Text("Organik (Tanpa Koin)", color = TextPrimary, fontSize = 10.sp, fontWeight = FontWeight.Bold)
                                             }
                                         }
 
                                         Spacer(modifier = Modifier.height(8.dp))
 
                                         Text(
-                                            text = "💡 Contoh: 1.000 aksi penggemar = Rp 50,00 • 20.000 aksi = Rp 1.000,00",
+                                            text = "💡 Monetisasi utama: Sawer DANA P2P langsung (0% potongan) & Gift Koin VibeStream",
                                             color = TikTokCyan,
                                             fontSize = 10.sp,
                                             fontWeight = FontWeight.Medium

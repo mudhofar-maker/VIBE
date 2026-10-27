@@ -652,7 +652,7 @@ private fun BottomShortsInfo(
 
         Spacer(modifier = Modifier.height(6.dp))
 
-        // Fan Interaction Rate Badge (@ Rp 0,05)
+        // Creator Community Badge
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
@@ -665,7 +665,7 @@ private fun BottomShortsInfo(
             Text(text = "💎", fontSize = 10.sp)
             Spacer(modifier = Modifier.width(4.dp))
             Text(
-                text = "Interaksi Penggemar: Rp 0,05 / aksi (Like, Komen, Share, Simpan)",
+                text = "Komunitas Kreator • Sawer DANA P2P 0% Biaya",
                 color = TikTokCyan,
                 fontSize = 10.sp,
                 fontWeight = FontWeight.SemiBold

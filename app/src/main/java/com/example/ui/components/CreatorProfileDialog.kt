@@ -164,20 +164,20 @@ fun CreatorProfileDialog(
                                 Text(text = "💎", fontSize = 14.sp)
                                 Spacer(modifier = Modifier.width(6.dp))
                                 Text(
-                                    text = "Royalti Interaksi Penggemar",
+                                    text = "Interaksi Komunitas Penggemar",
                                     color = TikTokCyan,
                                     fontSize = 12.sp,
                                     fontWeight = FontWeight.Bold
                                 )
                             }
                             Text(
-                                text = "Rp 0,05 / aksi",
-                                color = TikTokYellow,
+                                text = "Organik",
+                                color = TikTokCyan,
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.Bold,
                                 modifier = Modifier
                                     .clip(RoundedCornerShape(6.dp))
-                                    .background(TikTokYellow.copy(alpha = 0.15f))
+                                    .background(TikTokCyan.copy(alpha = 0.15f))
                                     .padding(horizontal = 6.dp, vertical = 2.dp)
                             )
                         }
@@ -185,7 +185,7 @@ fun CreatorProfileDialog(
                         Spacer(modifier = Modifier.height(6.dp))
 
                         Text(
-                            text = "Setiap Like, Komen, Share, & Simpan oleh penggemar bernilai Rp 0,05 untuk apresiasi kreator.",
+                            text = "Setiap Like, Komen, Share, & Simpan oleh penggemar memperkuat jangkauan video kreator secara organik.",
                             color = TextMuted,
                             fontSize = 11.sp,
                             lineHeight = 15.sp

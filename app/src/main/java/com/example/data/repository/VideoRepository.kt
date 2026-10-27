@@ -918,24 +918,34 @@ class VideoRepository(private val dao: TokVidDao) {
         return calc
     }
 
-    suspend fun incrementCoinsForLike(creatorUsername: String, amount: Long = 5L) {
-        rewardCoinForInteraction("Like Penggemar (Tarif: Rp 0,05) ke $creatorUsername", amount)
+    suspend fun incrementCoinsForLike(creatorUsername: String, amount: Long = 0L) {
+        if (amount > 0) {
+            rewardCoinForInteraction("Like Penggemar ke $creatorUsername", amount)
+        }
     }
 
-    suspend fun incrementCoinsForComment(amount: Long = 10L) {
-        rewardCoinForInteraction("Komentar Penggemar (Tarif: Rp 0,05) di video", amount)
+    suspend fun incrementCoinsForComment(amount: Long = 0L) {
+        if (amount > 0) {
+            rewardCoinForInteraction("Komentar Penggemar di video", amount)
+        }
     }
 
-    suspend fun incrementCoinsForShare(targetOrCreator: String, amount: Long = 15L) {
-        rewardCoinForInteraction("Share Penggemar (Tarif: Rp 0,05) video $targetOrCreator", amount)
+    suspend fun incrementCoinsForShare(targetOrCreator: String, amount: Long = 0L) {
+        if (amount > 0) {
+            rewardCoinForInteraction("Share Penggemar video $targetOrCreator", amount)
+        }
     }
 
-    suspend fun incrementCoinsForBookmark(amount: Long = 5L) {
-        rewardCoinForInteraction("Simpan Penggemar (Tarif: Rp 0,05) ke favorit", amount)
+    suspend fun incrementCoinsForBookmark(amount: Long = 0L) {
+        if (amount > 0) {
+            rewardCoinForInteraction("Simpan Penggemar ke favorit", amount)
+        }
     }
 
-    suspend fun incrementCoinsForFollow(creatorUsername: String, amount: Long = 5L) {
-        rewardCoinForInteraction("Follow Penggemar (Tarif: Rp 0,05) ke $creatorUsername", amount)
+    suspend fun incrementCoinsForFollow(creatorUsername: String, amount: Long = 0L) {
+        if (amount > 0) {
+            rewardCoinForInteraction("Follow Penggemar ke $creatorUsername", amount)
+        }
     }
 
     suspend fun decrementCoinsForGift(gift: VibeGift, creatorName: String): Boolean {

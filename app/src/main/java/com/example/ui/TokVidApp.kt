@@ -181,13 +181,13 @@ fun TokVidApp(viewModel: MainViewModel) {
                     onLikeClick = {
                         viewModel.toggleLike(it)
                         if (!it.isLiked) {
-                            Toast.makeText(context, "❤️ Disukai! Apresiasi penggemar Rp 0,05 tercatat", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, "❤️ Disukai!", Toast.LENGTH_SHORT).show()
                         }
                     },
                     onBookmarkClick = {
                         viewModel.toggleBookmark(it)
                         if (!it.isBookmarked) {
-                            Toast.makeText(context, "🔖 Disimpan! Apresiasi penggemar Rp 0,05 tercatat", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, "🔖 Disimpan ke favorit", Toast.LENGTH_SHORT).show()
                         }
                     },
                     onCommentClick = { viewModel.openComments(it) },
@@ -211,19 +211,19 @@ fun TokVidApp(viewModel: MainViewModel) {
                         onLikeClick = {
                             viewModel.toggleLike(it)
                             if (!it.isLiked) {
-                                Toast.makeText(context, "❤️ Disukai! Apresiasi penggemar Rp 0,05 tercatat", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, "❤️ Disukai!", Toast.LENGTH_SHORT).show()
                             }
                         },
                         onBookmarkClick = {
                             viewModel.toggleBookmark(it)
                             if (!it.isBookmarked) {
-                                Toast.makeText(context, "🔖 Disimpan! Apresiasi penggemar Rp 0,05 tercatat", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, "🔖 Disimpan ke favorit", Toast.LENGTH_SHORT).show()
                             }
                         },
                         onShareClick = { viewModel.openShare(it) },
                         onAddComment = { text ->
                             viewModel.addComment(selectedWatchVideo!!.id, text)
-                            Toast.makeText(context, "💬 Komentar terkirim! Apresiasi penggemar Rp 0,05 tercatat", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, "💬 Komentar terkirim", Toast.LENGTH_SHORT).show()
                         },
                         onDanaSawerClick = { viewModel.openDanaSawer(it) },
                         onGiftClick = { viewModel.openGiftSheet(it) }
@@ -400,7 +400,7 @@ fun TokVidApp(viewModel: MainViewModel) {
                 onDismiss = { viewModel.closeComments() },
                 onSendComment = { text ->
                     viewModel.addComment(commentsVideo!!.id, text)
-                    Toast.makeText(context, "💬 Komentar terkirim! Apresiasi penggemar Rp 0,05 tercatat", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "💬 Komentar terkirim!", Toast.LENGTH_SHORT).show()
                 }
             )
         }
@@ -412,7 +412,7 @@ fun TokVidApp(viewModel: MainViewModel) {
                 video = shareVideo!!,
                 onShareAction = {
                     viewModel.incrementCoinsForShare(shareVideo!!.creatorUsername)
-                    Toast.makeText(context, "↗️ Dibagikan! Apresiasi penggemar Rp 0,05 tercatat", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "↗️ Video berhasil dibagikan!", Toast.LENGTH_SHORT).show()
                 },
                 onDismiss = { viewModel.closeShare() }
             )

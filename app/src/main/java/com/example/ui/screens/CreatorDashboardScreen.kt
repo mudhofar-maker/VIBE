@@ -548,7 +548,7 @@ private fun CreatorAnalyticsAndEarningsView(
                     )
 
                     Text(
-                        text = "Termasuk hasil sawer DANA, royalti interaksi @Rp 0,05, & koin hadiah",
+                        text = "Termasuk hasil sawer DANA 0% potongan & koin hadiah VibeGift",
                         color = TextMuted,
                         fontSize = 11.sp
                     )
@@ -596,8 +596,8 @@ private fun CreatorAnalyticsAndEarningsView(
                         }
 
                         Column(modifier = Modifier.weight(1f)) {
-                            Text("Royalti Aksi (Rp 0,05)", color = TextMuted, fontSize = 10.sp)
-                            Text(earningsSummary.formattedRoyalty(), color = TikTokYellow, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                            Text("Interaksi Komunitas", color = TextMuted, fontSize = 10.sp)
+                            Text("14.8K Aksi", color = TikTokYellow, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                             Text("Like, Komen, Share", color = TextSecondary, fontSize = 9.sp)
                         }
 

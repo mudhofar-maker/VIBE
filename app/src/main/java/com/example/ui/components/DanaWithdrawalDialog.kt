@@ -453,7 +453,7 @@ fun DanaWithdrawalDialog(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Text("SALDO DAPAT DITARIK", color = TextMuted, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
-                                Text("Apresiasi: Rp 0,05 / aksi", color = TikTokCyan, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                                Text("0% Biaya Admin", color = TikTokCyan, fontSize = 10.sp, fontWeight = FontWeight.Bold)
                             }
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
@@ -463,7 +463,7 @@ fun DanaWithdrawalDialog(
                                 fontWeight = FontWeight.ExtraBold
                             )
                             Text(
-                                text = "Akumulasi saweran langsung dan royalti Like, Komen, Share, & Simpan (@Rp 0,05) dari penggemar.",
+                                text = "Akumulasi saweran langsung DANA P2P dan hadiah VibeGift dari penggemar.",
                                 color = TextMuted,
                                 fontSize = 11.sp
                             )

@@ -575,7 +575,7 @@ fun ProfileScreen(
                             Spacer(modifier = Modifier.width(8.dp))
                             Column {
                                 Text(
-                                    text = "Royalti Interaksi Penggemar",
+                                    text = "Interaksi Komunitas Penggemar",
                                     color = TextPrimary,
                                     fontSize = 13.sp,
                                     fontWeight = FontWeight.Bold
@@ -588,13 +588,13 @@ fun ProfileScreen(
                             }
                         }
                         Text(
-                            text = "Rp 0,05 / aksi",
-                            color = TikTokYellow,
+                            text = "Organik",
+                            color = TikTokCyan,
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Bold,
                             modifier = Modifier
                                 .clip(RoundedCornerShape(6.dp))
-                                .background(TikTokYellow.copy(alpha = 0.15f))
+                                .background(TikTokCyan.copy(alpha = 0.15f))
                                 .padding(horizontal = 8.dp, vertical = 3.dp)
                         )
                     }
