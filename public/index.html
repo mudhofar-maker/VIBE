@@ -103,8 +103,14 @@
       <!-- Right Header Actions (Wallet, Notifications, User Avatar/Login, DANA CTA) -->
       <div class="flex items-center gap-2">
         
+        <!-- Chicken Farm & Golden Egg Ecosystem Badge -->
+        <button onclick="openChickenFarmModal()" class="flex items-center gap-1.5 px-2.5 py-1.5 bg-gradient-to-r from-amber-500/20 to-yellow-500/20 hover:from-amber-500/30 hover:to-yellow-500/30 border border-yellow-500/40 rounded-xl transition-all shadow-sm shadow-yellow-500/10" title="Kandang Ayam & Taman Bermain Cuan">
+          <span class="text-sm animate-bounce">🐔</span>
+          <span id="header-farm-eggs" class="text-xs font-bold text-tiktokYellow">12 Telur</span>
+        </button>
+
         <!-- Live Coin Wallet Badge -->
-        <button onclick="openCoinModal()" class="flex items-center gap-1.5 px-2.5 py-1.5 bg-darkCard hover:bg-darkSurface border border-yellow-500/30 rounded-xl transition-all">
+        <button onclick="openChickenFarmModal('market')" class="flex items-center gap-1.5 px-2.5 py-1.5 bg-darkCard hover:bg-darkSurface border border-yellow-500/30 rounded-xl transition-all" title="Dompet & Pasar Konversi Koin">
           <span class="text-sm">🪙</span>
           <span id="header-coins" class="text-xs font-bold text-tiktokYellow">500 Koin</span>
         </button>
@@ -135,6 +141,9 @@
     <!-- CATEGORY NAVIGATION BAR (Semua, Trending, Music, Gaming, Comedy, etc.) -->
     <div class="border-t border-darkBorder/60 bg-darkCard/50">
       <div class="max-w-7xl mx-auto px-4 py-2 overflow-x-auto custom-scroll flex items-center gap-2">
+        <button onclick="openChickenFarmModal()" class="cat-pill px-3.5 py-1 rounded-full text-xs font-bold text-amber-300 bg-amber-500/20 border border-amber-500/40 hover:bg-amber-500/30 transition-all flex items-center gap-1 shrink-0">
+          <span>🐔 Kandang & Taman Cuan 🥚</span>
+        </button>
         <button onclick="filterCategory('Semua', this)" class="cat-pill px-3.5 py-1 rounded-full text-xs font-bold bg-tiktokCyan text-black transition-all">
           Semua
         </button>
@@ -468,6 +477,27 @@
               <span class="text-[10px] text-slate-400 font-semibold">Suka Diterima</span>
             </div>
           </div>
+
+          <!-- Peternakan Ayam & Telur Emas Profil Card -->
+          <div onclick="openChickenFarmModal()" class="mt-4 p-3.5 bg-gradient-to-r from-amber-950/40 via-darkSurface to-yellow-950/30 rounded-2xl border border-yellow-500/40 hover:border-yellow-400 cursor-pointer transition-all flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-yellow-500/20 text-yellow-400 flex items-center justify-center text-xl">
+                🐔
+              </div>
+              <div>
+                <div class="flex items-center gap-1.5">
+                  <h4 class="text-xs font-bold text-white">Peternakan Ayam & Telur Emas</h4>
+                  <span class="px-1.5 py-0.2 bg-yellow-400 text-black text-[9px] font-black rounded">Cuan Aktif</span>
+                </div>
+                <p class="text-[11px] text-slate-400 mt-0.5">
+                  <span id="profile-farm-hens">2</span> Ayam • <span id="profile-farm-eggs">12</span> Telur Emas Siap Cuan
+                </p>
+              </div>
+            </div>
+            <button class="px-3 py-1.5 bg-yellow-400 text-black text-xs font-black rounded-xl shadow-md">
+              Buka Kandang 🌾
+            </button>
+          </div>
         </div>
       </div>
 
@@ -539,6 +569,405 @@
 
   <!-- DIRECT HIDDEN FILE INPUT UNTUK GALERI HP -->
   <input type="file" id="direct-gallery-picker" accept="video/*" class="hidden" onchange="handleDirectGalleryPick(event)" />
+
+  <!-- ==================== MODAL: PETERNAKAN AYAM & TELUR EMAS CUAN (KANDANG & TAMAN BERMAIN) ==================== -->
+  <div id="modal-chicken-farm" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-md hidden flex items-center justify-center p-2 sm:p-4">
+    <div class="bg-darkCard border border-yellow-500/40 w-full max-w-lg rounded-3xl overflow-hidden shadow-2xl flex flex-col max-h-[92vh]">
+      
+      <!-- Farm Header -->
+      <div class="p-4 bg-gradient-to-r from-amber-950/70 via-darkSurface to-yellow-950/60 flex items-center justify-between border-b border-yellow-500/30">
+        <div class="flex items-center gap-3">
+          <div class="w-11 h-11 rounded-2xl bg-yellow-500/20 border border-yellow-500/50 flex items-center justify-center text-2xl shadow-lg">
+            🐔
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <h3 class="text-sm sm:text-base font-extrabold text-white">Peternakan Ayam & Telur Cuan</h3>
+              <span class="px-2 py-0.5 bg-yellow-400 text-black text-[9px] font-black rounded-md uppercase">Ekosistem Alami</span>
+            </div>
+            <p class="text-[11px] text-yellow-200/80">Ayam ➡️ Telur ➡️ Anak Ayam ➡️ Cuan DANA P2P</p>
+          </div>
+        </div>
+        <button onclick="closeChickenFarmModal()" class="w-8 h-8 rounded-full bg-darkCard text-slate-300 hover:text-white flex items-center justify-center text-xs border border-darkBorder">✕</button>
+      </div>
+
+      <!-- Quick Metrics Ribbon (Ayam, Anak Ayam, Telur, Pakan, Saldo Cuan) -->
+      <div class="grid grid-cols-5 gap-1.5 p-3 bg-darkSurface/90 border-b border-darkBorder text-center text-xs">
+        <div class="p-1.5 bg-darkBg/60 rounded-xl border border-darkBorder">
+          <span class="text-[9px] text-slate-400 block font-semibold">Ayam</span>
+          <span class="font-extrabold text-amber-400 flex items-center justify-center gap-0.5"><span class="text-xs">🐔</span> <span id="farm-hens-count">2</span></span>
+        </div>
+        <div class="p-1.5 bg-darkBg/60 rounded-xl border border-darkBorder">
+          <span class="text-[9px] text-slate-400 block font-semibold">Anak Ayam</span>
+          <span class="font-extrabold text-yellow-300 flex items-center justify-center gap-0.5"><span class="text-xs">🐣</span> <span id="farm-chicks-count">3</span></span>
+        </div>
+        <div class="p-1.5 bg-darkBg/60 rounded-xl border border-yellow-500/40 bg-yellow-500/10">
+          <span class="text-[9px] text-yellow-200 block font-semibold">Telur</span>
+          <span class="font-extrabold text-yellow-400 flex items-center justify-center gap-0.5"><span class="text-xs">🥚</span> <span id="farm-eggs-count">12</span></span>
+        </div>
+        <div class="p-1.5 bg-darkBg/60 rounded-xl border border-darkBorder">
+          <span class="text-[9px] text-slate-400 block font-semibold">Pakan</span>
+          <span class="font-extrabold text-emerald-400 flex items-center justify-center gap-0.5"><span class="text-xs">🌾</span> <span id="farm-feed-count">25</span></span>
+        </div>
+        <div class="p-1.5 bg-darkBg/60 rounded-xl border border-blue-500/40 bg-blue-500/10">
+          <span class="text-[9px] text-blue-200 block font-semibold">DANA</span>
+          <span class="font-extrabold text-danaBlue text-[11px]" id="farm-dana-balance">Rp 175K</span>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs (Kandang, Taman, Pasar, Bank, Ekosistem) -->
+      <div class="flex border-b border-darkBorder bg-darkBg/80 text-[11px] sm:text-xs font-bold overflow-x-auto custom-scroll">
+        <button id="farm-tab-coop" onclick="switchFarmTab('coop')" class="flex-1 min-w-[80px] py-2.5 px-2 text-center text-yellow-400 border-b-2 border-yellow-400 transition-all flex items-center justify-center gap-1">
+          <span>🏠</span> Kandang
+        </button>
+        <button id="farm-tab-play" onclick="switchFarmTab('play')" class="flex-1 min-w-[80px] py-2.5 px-2 text-center text-slate-400 hover:text-white transition-all flex items-center justify-center gap-1">
+          <span>🎪</span> Taman
+        </button>
+        <button id="farm-tab-market" onclick="switchFarmTab('market')" class="flex-1 min-w-[80px] py-2.5 px-2 text-center text-slate-400 hover:text-white transition-all flex items-center justify-center gap-1">
+          <span>🏪</span> Pasar
+        </button>
+        <button id="farm-tab-bank" onclick="switchFarmTab('bank')" class="flex-1 min-w-[80px] py-2.5 px-2 text-center text-slate-400 hover:text-white transition-all flex items-center justify-center gap-1">
+          <span>🏦</span> Bank DANA
+        </button>
+        <button id="farm-tab-eco" onclick="switchFarmTab('eco')" class="flex-1 min-w-[80px] py-2.5 px-2 text-center text-slate-400 hover:text-white transition-all flex items-center justify-center gap-1">
+          <span>💡</span> Cuan 3 Pihak
+        </button>
+      </div>
+
+      <!-- Modal Content Body -->
+      <div class="p-4 overflow-y-auto custom-scroll flex-1 space-y-4">
+
+        <!-- 1. TAB: KANDANG AYAM (COOP) -->
+        <div id="farm-content-coop" class="space-y-4">
+          <!-- Visual Henhouse Barn -->
+          <div class="p-5 rounded-2xl bg-gradient-to-b from-amber-950/40 via-darkSurface to-darkBg border border-yellow-500/30 text-center relative overflow-hidden">
+            <div class="text-4xl sm:text-5xl flex items-center justify-center gap-4 py-2" id="coop-chickens-animation">
+              <span class="animate-bounce" style="animation-duration: 2.2s;">🐔</span>
+              <span class="text-2xl opacity-70">🌾</span>
+              <span class="animate-bounce" style="animation-duration: 1.8s;">🐔</span>
+            </div>
+            <div class="mt-2">
+              <h4 class="text-sm font-extrabold text-white"><span id="coop-hens-label">2</span> Ekor Ayam Petelur Aktif di Kandang</h4>
+              <p class="text-xs text-yellow-200/70 mt-0.5">Ayam bertelur otomatis & seketika saat diberi pakan jagung!</p>
+            </div>
+
+            <!-- Nest Display -->
+            <div class="mt-4 p-3 bg-darkBg/80 rounded-xl border border-darkBorder flex items-center justify-between">
+              <div class="text-left">
+                <span class="text-[11px] text-slate-400 block">Sarang Bertelur Saat Ini:</span>
+                <span class="text-xs font-bold text-yellow-300 flex items-center gap-1">
+                  <span>🪺</span> <span id="coop-nest-count">2 Telur Siap Panen</span>
+                </span>
+              </div>
+              <button onclick="harvestEggs()" class="px-3 py-1.5 bg-yellow-400 hover:bg-yellow-300 text-black text-xs font-black rounded-lg shadow-md transition-all active:scale-95">
+                🥚 Panen Telur
+              </button>
+            </div>
+          </div>
+
+          <!-- Coop Action Buttons -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <!-- Beri Pakan Jagung -->
+            <button onclick="feedChickens()" class="p-3.5 rounded-2xl bg-gradient-to-r from-emerald-950/50 to-darkSurface border border-emerald-500/40 hover:border-emerald-400 flex items-center gap-3 text-left transition-all active:scale-98 group">
+              <div class="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-xl group-hover:scale-110 transition-transform">
+                🌾
+              </div>
+              <div class="flex-1">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-bold text-white">Beri Pakan Ayam</span>
+                  <span class="text-[10px] text-emerald-400 font-bold">-2 Pakan</span>
+                </div>
+                <p class="text-[10px] text-slate-400 mt-0.5">Ayam langsung bertelur +2 Telur Emas</p>
+              </div>
+            </button>
+
+            <!-- Tetaskan Anak Ayam (Inkubator) -->
+            <button onclick="incubateEggs()" class="p-3.5 rounded-2xl bg-gradient-to-r from-yellow-950/50 to-darkSurface border border-yellow-500/40 hover:border-yellow-400 flex items-center gap-3 text-left transition-all active:scale-98 group">
+              <div class="w-10 h-10 rounded-xl bg-yellow-500/20 text-yellow-400 flex items-center justify-center text-xl group-hover:scale-110 transition-transform">
+                🐣
+              </div>
+              <div class="flex-1">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-bold text-white">Tetaskan Anak Ayam</span>
+                  <span class="text-[10px] text-yellow-300 font-bold">-2 Telur</span>
+                </div>
+                <p class="text-[10px] text-slate-400 mt-0.5">Menetas jadi 1 Anak Ayam baru di Taman</p>
+              </div>
+            </button>
+          </div>
+
+          <!-- Klaim Pakan Gratis Harian -->
+          <div class="p-3 bg-darkSurface/60 rounded-xl border border-darkBorder flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+              <span class="text-xl">🎁</span>
+              <div>
+                <span class="text-xs font-bold text-white block">Pakan Jagung Harian Gratis</span>
+                <span class="text-[10px] text-slate-400">Klaim jatah pakan gratis & koin harian Anda</span>
+              </div>
+            </div>
+            <button onclick="claimDailyFeedBonus()" class="px-3 py-1.5 bg-tiktokCyan hover:bg-cyan-300 text-black text-xs font-extrabold rounded-lg transition-all active:scale-95">
+              Klaim Gratis
+            </button>
+          </div>
+        </div>
+
+        <!-- 2. TAB: TAMAN BERMAIN ANAK AYAM (PLAYGROUND) -->
+        <div id="farm-content-play" class="space-y-4 hidden">
+          <!-- Visual Playground -->
+          <div class="p-5 rounded-2xl bg-gradient-to-b from-emerald-950/30 via-darkSurface to-darkBg border border-emerald-500/30 text-center relative overflow-hidden">
+            <div class="text-4xl flex items-center justify-center gap-3 py-2" id="chicks-animation">
+              <span class="animate-bounce" style="animation-duration: 1.4s;">🐣</span>
+              <span class="animate-bounce" style="animation-duration: 1.9s;">🐥</span>
+              <span class="animate-bounce" style="animation-duration: 1.6s;">🐤</span>
+            </div>
+            <div class="mt-2">
+              <h4 class="text-sm font-extrabold text-white"><span id="playground-chicks-label">3</span> Ekor Anak Ayam Sedang Bermain</h4>
+              <p class="text-xs text-slate-300 mt-0.5">Rawat dan latih anak ayam sampai dewasa agar menjadi ayam petelur baru!</p>
+            </div>
+
+            <!-- Chick Growth Progress Bar -->
+            <div class="mt-4 p-3 bg-darkBg/80 rounded-xl border border-darkBorder space-y-1.5">
+              <div class="flex justify-between text-xs">
+                <span class="text-slate-400 font-semibold">Tingkat Pertumbuhan:</span>
+                <span class="font-bold text-yellow-300" id="chick-growth-percent">60% Menuju Dewasa</span>
+              </div>
+              <div class="w-full h-3 bg-slate-800 rounded-full overflow-hidden border border-slate-700">
+                <div id="chick-growth-bar" class="h-full bg-gradient-to-r from-amber-400 to-yellow-400 transition-all duration-300" style="width: 60%"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Growth Action Buttons -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <!-- Beri Vitamin Pertumbuhan -->
+            <button onclick="nurtureChick()" class="p-3.5 rounded-2xl bg-darkSurface border border-yellow-500/30 hover:border-yellow-400 flex items-center gap-3 text-left transition-all active:scale-98 group">
+              <div class="w-10 h-10 rounded-xl bg-yellow-500/20 text-yellow-400 flex items-center justify-center text-xl group-hover:scale-110 transition-transform">
+                🍼
+              </div>
+              <div class="flex-1">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-bold text-white">Beri Vitamin Anak Ayam</span>
+                  <span class="text-[10px] text-yellow-300 font-bold">-5 Koin</span>
+                </div>
+                <p class="text-[10px] text-slate-400 mt-0.5">Tambah +25% progress pertumbuhan</p>
+              </div>
+            </button>
+
+            <!-- Transformasi Anak Ayam Jadi Ayam Dewasa -->
+            <button onclick="transformChickToHen()" class="p-3.5 rounded-2xl bg-gradient-to-r from-amber-950/40 to-darkSurface border border-amber-500/40 hover:border-amber-400 flex items-center gap-3 text-left transition-all active:scale-98 group">
+              <div class="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center text-xl group-hover:scale-110 transition-transform">
+                🌟
+              </div>
+              <div class="flex-1">
+                <span class="text-xs font-bold text-white block">Dewasakan ke Kandang</span>
+                <p class="text-[10px] text-amber-300/80 mt-0.5">Anak ayam jadi Ayam Petelur di Kandang</p>
+              </div>
+            </button>
+          </div>
+
+          <div class="p-3 bg-darkBg/60 rounded-xl border border-darkBorder text-[11px] text-slate-300 space-y-1">
+            <span class="font-bold text-yellow-400">💡 Pertumbuhan Berkelanjutan (Compound Growth):</span>
+            <p class="text-slate-400">Setiap anak ayam yang berhasil tumbuh dewasa akan pindah ke kandang dan menghasilkan telur emas setiap hari!</p>
+          </div>
+        </div>
+
+        <!-- 3. TAB: PASAR KONVERSI APLIKASI (MARKET) -->
+        <div id="farm-content-market" class="space-y-4 hidden">
+          <!-- Section A: Jual Telur Jadi Saldo DANA P2P -->
+          <div class="p-4 rounded-2xl bg-darkSurface/60 border border-darkBorder space-y-3">
+            <div class="flex items-center justify-between">
+              <div>
+                <h4 class="text-xs font-bold text-white flex items-center gap-1.5">
+                  <span>💰</span> Jual Telur Emas ➡️ Saldo DANA P2P (0% Admin)
+                </h4>
+                <p class="text-[10px] text-slate-400">Langsung cair ke dompet DANA yang bisa ditarik</p>
+              </div>
+              <span class="text-xs font-extrabold text-yellow-400" id="market-eggs-avail">12 Telur Ada</span>
+            </div>
+
+            <!-- Conversion Cards -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+              <!-- Tier 1 -->
+              <div class="p-3 bg-darkBg rounded-xl border border-darkBorder hover:border-yellow-500/40 flex flex-col justify-between gap-2">
+                <div>
+                  <span class="text-[10px] text-slate-400 block">Paket Mini</span>
+                  <div class="text-xs font-bold text-white mt-0.5">10 Telur Emas</div>
+                  <div class="text-sm font-extrabold text-danaBlue mt-1">Rp 2.500</div>
+                </div>
+                <button onclick="sellEggsForDana(10, 2500)" class="w-full py-1.5 bg-danaBlue hover:bg-blue-600 text-white rounded-lg text-xs font-bold transition-all active:scale-95">
+                  Tukar DANA
+                </button>
+              </div>
+
+              <!-- Tier 2 -->
+              <div class="p-3 bg-darkBg rounded-xl border border-yellow-500/40 bg-yellow-500/5 flex flex-col justify-between gap-2 relative">
+                <span class="absolute -top-2 right-2 px-1.5 py-0.2 bg-yellow-400 text-black text-[9px] font-black rounded">Populer</span>
+                <div>
+                  <span class="text-[10px] text-slate-400 block">Paket Sedang</span>
+                  <div class="text-xs font-bold text-white mt-0.5">50 Telur Emas</div>
+                  <div class="text-sm font-extrabold text-danaBlue mt-1">Rp 15.000</div>
+                  <span class="text-[9px] text-emerald-400">+Bonus Rp 2.500</span>
+                </div>
+                <button onclick="sellEggsForDana(50, 15000)" class="w-full py-1.5 bg-yellow-400 hover:bg-yellow-300 text-black rounded-lg text-xs font-black transition-all active:scale-95">
+                  Tukar DANA
+                </button>
+              </div>
+
+              <!-- Tier 3 -->
+              <div class="p-3 bg-darkBg rounded-xl border border-purple-500/40 bg-purple-500/5 flex flex-col justify-between gap-2">
+                <div>
+                  <span class="text-[10px] text-slate-400 block">Paket Sultan</span>
+                  <div class="text-xs font-bold text-white mt-0.5">100 Telur Emas</div>
+                  <div class="text-sm font-extrabold text-danaBlue mt-1">Rp 35.000</div>
+                  <span class="text-[9px] text-emerald-400">+Bonus Rp 10.000</span>
+                </div>
+                <button onclick="sellEggsForDana(100, 35000)" class="w-full py-1.5 bg-gradient-to-r from-purple-600 to-tiktokRed text-white rounded-lg text-xs font-bold transition-all active:scale-95">
+                  Tukar DANA
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section B: Jual Telur Jadi Koin & Toko Pakan -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <!-- Jual Telur Jadi Koin -->
+            <div class="p-3.5 rounded-2xl bg-darkSurface/60 border border-darkBorder space-y-2">
+              <h5 class="text-xs font-bold text-white flex items-center gap-1.5">
+                <span>🪙</span> Tukar Telur ➡️ Koin VibeStream
+              </h5>
+              <p class="text-[10px] text-slate-400">Untuk kirim gift ke kreator favorit</p>
+              <div class="flex items-center justify-between pt-1">
+                <span class="text-xs font-semibold text-slate-200">5 Telur = 25 Koin</span>
+                <button onclick="sellEggsForCoins(5, 25)" class="px-3 py-1 bg-darkBg hover:bg-slate-800 text-tiktokYellow border border-yellow-500/40 rounded-lg text-xs font-bold active:scale-95">
+                  Tukar 25 Koin
+                </button>
+              </div>
+              <div class="flex items-center justify-between pt-1 border-t border-darkBorder">
+                <span class="text-xs font-semibold text-slate-200">20 Telur = 120 Koin</span>
+                <button onclick="sellEggsForCoins(20, 120)" class="px-3 py-1 bg-darkBg hover:bg-slate-800 text-tiktokYellow border border-yellow-500/40 rounded-lg text-xs font-bold active:scale-95">
+                  Tukar 120 Koin
+                </button>
+              </div>
+            </div>
+
+            <!-- Beli Pakan Pakai Koin -->
+            <div class="p-3.5 rounded-2xl bg-darkSurface/60 border border-darkBorder space-y-2">
+              <h5 class="text-xs font-bold text-white flex items-center gap-1.5">
+                <span>🌾</span> Toko Pakan Peternak
+              </h5>
+              <p class="text-[10px] text-slate-400">Beli pakan jagung untuk ayam bertelur</p>
+              <div class="flex items-center justify-between pt-1">
+                <span class="text-xs font-semibold text-slate-200">+20 Pakan Jagung</span>
+                <button onclick="buyChickenFeed(20, 15)" class="px-3 py-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold active:scale-95">
+                  Beli 15 Koin
+                </button>
+              </div>
+              <div class="flex items-center justify-between pt-1 border-t border-darkBorder">
+                <span class="text-xs font-semibold text-slate-200">+1 Indukan Ayam 🐔</span>
+                <button onclick="buyAdultHen(50)" class="px-3 py-1 bg-yellow-400 hover:bg-yellow-300 text-black rounded-lg text-xs font-black active:scale-95">
+                  Beli 50 Koin
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. TAB: BANK TRANSAKSI DANA P2P (BANK) -->
+        <div id="farm-content-bank" class="space-y-4 hidden">
+          <!-- DANA Account & Balance Box -->
+          <div class="p-5 rounded-2xl bg-gradient-to-r from-blue-950/50 via-darkSurface to-cyan-950/40 border border-danaBlue/40 space-y-3">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span class="text-2xl">🏦</span>
+                <div>
+                  <h4 class="text-sm font-extrabold text-white">Bank DANA P2P VibeStream</h4>
+                  <p class="text-[10px] text-danaBlue font-bold">100% Bebas Biaya Admin (0% Potongan)</p>
+                </div>
+              </div>
+              <span class="px-2 py-0.5 bg-emerald-500/20 text-emerald-400 text-[10px] font-black rounded-md">TERVERIFIKASI</span>
+            </div>
+
+            <div class="p-3 bg-darkBg/80 rounded-xl border border-darkBorder flex items-center justify-between">
+              <div>
+                <span class="text-[10px] text-slate-400 block">Akun DANA Terhubung:</span>
+                <span class="text-xs font-bold text-white" id="farm-bank-dana-number">0812-9876-5432</span>
+              </div>
+              <div class="text-right">
+                <span class="text-[10px] text-slate-400 block">Total Saldo Cuan:</span>
+                <span class="text-sm font-extrabold text-danaBlue" id="farm-bank-total-balance">Rp 175.000</span>
+              </div>
+            </div>
+
+            <!-- Instant Withdraw Button -->
+            <button onclick="handleFarmDanaWithdraw()" class="w-full py-3 bg-danaBlue hover:bg-blue-600 text-white rounded-xl text-xs font-extrabold shadow-lg shadow-danaBlue/30 transition-all active:scale-95 flex items-center justify-center gap-2">
+              <span>💸</span> Tarik Saldo Cuan ke Akun DANA Saya Sekarang
+            </button>
+          </div>
+
+          <!-- Transaction Assurance Guarantee -->
+          <div class="p-3.5 bg-darkSurface/60 rounded-xl border border-darkBorder text-xs space-y-2">
+            <span class="font-bold text-white flex items-center gap-1.5">
+              <span>🛡️</span> Garansi Transaksi Alami & Transparan:
+            </span>
+            <ul class="text-[11px] text-slate-300 space-y-1 list-disc list-inside">
+              <li>Uang rupiah hasil konversi telur emas langsung tercatat di saldo DANA P2P.</li>
+              <li>Pencairan dana dikirim langsung tanpa potongan biaya perantara (*0% admin fee*).</li>
+              <li>Sistem anti-kecurangan memastikan ekosistem berjalan adil dan konsisten.</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- 5. TAB: EKOSISTEM & CARA CUAN 3 PIHAK (ECO) -->
+        <div id="farm-content-eco" class="space-y-3.5 hidden">
+          <div class="text-center p-2">
+            <h4 class="text-sm font-extrabold text-white">Sinergi Keuntungan 3 Pihak (Win-Win-Win)</h4>
+            <p class="text-xs text-yellow-300/80 mt-0.5">Bagaimana Pengguna, Kreator, dan Pemilik Aplikasi Semua Cuan & Senang</p>
+          </div>
+
+          <!-- Card 1: Pengguna/Penonton -->
+          <div class="p-3.5 rounded-xl bg-darkSurface/80 border border-yellow-500/30 flex items-start gap-3">
+            <div class="w-9 h-9 rounded-xl bg-yellow-500/20 text-yellow-400 flex items-center justify-center text-lg shrink-0">
+              🧑‍🌾
+            </div>
+            <div>
+              <h5 class="text-xs font-bold text-white">1. Pengguna (Penonton & Peternak)</h5>
+              <p class="text-[11px] text-slate-300 mt-0.5 leading-relaxed">
+                Nonton video favorit dapat pakan gratis, rawat ayam petelur di kandang, panen telur emas, tetaskan anak ayam baru secara alami tanpa modal, dan jual telur menjadi uang rupiah nyata yang bisa langsung ditarik ke DANA P2P.
+              </p>
+            </div>
+          </div>
+
+          <!-- Card 2: Kreator -->
+          <div class="p-3.5 rounded-xl bg-darkSurface/80 border border-tiktokCyan/30 flex items-start gap-3">
+            <div class="w-9 h-9 rounded-xl bg-tiktokCyan/20 text-tiktokCyan flex items-center justify-center text-lg shrink-0">
+              🎨
+            </div>
+            <div>
+              <h5 class="text-xs font-bold text-white">2. Kreator Konten</h5>
+              <p class="text-[11px] text-slate-300 mt-0.5 leading-relaxed">
+                Penggemar yang memiliki banyak koin dan telur emas dari peternakannya lebih royal memberikan saweran DANA P2P langsung dan hadiah gift spesial ke kreator saat siaran langsung dan feed video.
+              </p>
+            </div>
+          </div>
+
+          <!-- Card 3: Pemilik Aplikasi (Owner) -->
+          <div class="p-3.5 rounded-xl bg-darkSurface/80 border border-purple-500/30 flex items-start gap-3">
+            <div class="w-9 h-9 rounded-xl bg-purple-500/20 text-purple-400 flex items-center justify-center text-lg shrink-0">
+              👑
+            </div>
+            <div>
+              <h5 class="text-xs font-bold text-white">3. Pemilik Aplikasi (Owner)</h5>
+              <p class="text-[11px] text-slate-300 mt-0.5 leading-relaxed">
+                Retensi dan durasi pemakaian aplikasi melesat tinggi karena peternakan perlu dirawat setiap hari, perputaran ekonomi koin mandiri dan sehat, serta monetisasi paket koin booster menghasilkan profit berkelanjutan.
+              </p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
 
   <!-- ==================== MODAL: AUTENTIKASI (LOGIN & SIGN UP) ==================== -->
   <div id="modal-auth" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden flex items-center justify-center p-4">
@@ -750,6 +1179,20 @@
             <span class="px-2 py-0.5 rounded-full bg-red-500 text-white text-[10px] font-extrabold animate-pulse">LIVE</span>
           </div>
           <p class="text-xs text-slate-400 mt-0.5">Studio broadcast interaktif, penonton live, & saweran DANA 0%</p>
+        </div>
+      </button>
+
+      <!-- Action 4: Peternakan Ayam & Telur Cuan -->
+      <button onclick="closeCreateActionSheet(); openChickenFarmModal();" class="w-full p-4 rounded-2xl bg-gradient-to-r from-darkCard to-darkCard/60 border border-yellow-500/40 hover:border-yellow-500 flex items-center gap-4 text-left group transition-all">
+        <div class="w-12 h-12 rounded-xl bg-yellow-500/20 text-yellow-400 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
+          🐔
+        </div>
+        <div class="flex-1">
+          <div class="flex items-center justify-between">
+            <h4 class="text-sm font-bold text-white">Peternakan Ayam & Telur Cuan</h4>
+            <span class="px-2 py-0.5 rounded-full bg-yellow-400 text-black text-[10px] font-black">CUAN DANA</span>
+          </div>
+          <p class="text-xs text-slate-400 mt-0.5">Panen telur emas, tetaskan anak ayam, pasar konversi & bank DANA P2P</p>
         </div>
       </button>
     </div>
@@ -1088,6 +1531,15 @@
     let sawerBalance = 175000;
     let royaltyBalance = 30000;
     let unreadNotifs = 2;
+
+    // Peternakan Ayam & Telur Emas Cuan State
+    let hensCount = 2; // Ayam Petelur Dewasa di Kandang
+    let chicksCount = 3; // Anak Ayam di Taman Bermain
+    let eggsCount = 12; // Telur Emas di Gudang
+    let coopNestEggs = 2; // Telur Emas di Sarang Siap Panen
+    let feedCount = 25; // Pakan Jagung (kg)
+    let chickGrowthProgress = 60; // 0 - 100%
+    let totalCuanRupiahFromEggs = 60000;
 
     const sampleNotifications = [
       {
@@ -1566,6 +2018,11 @@
       if (pFollowers) pFollowers.innerText = currentUser.followers;
       if (pLikes) pLikes.innerText = currentUser.likesReceived;
 
+      const pFarmHens = document.getElementById('profile-farm-hens');
+      if (pFarmHens) pFarmHens.innerText = hensCount;
+      const pFarmEggs = document.getElementById('profile-farm-eggs');
+      if (pFarmEggs) pFarmEggs.innerText = eggsCount;
+
       renderProfileVideoGrid();
     }
 
@@ -1713,6 +2170,244 @@
       if (dashSawer) dashSawer.innerText = `Rp ${sawerBalance.toLocaleString('id-ID')}`;
       const modalWithdrawable = document.getElementById('modal-withdrawable');
       if (modalWithdrawable) modalWithdrawable.innerText = `Rp ${sawerBalance.toLocaleString('id-ID')}`;
+      
+      const headerFarmEggs = document.getElementById('header-farm-eggs');
+      if (headerFarmEggs) headerFarmEggs.innerText = `${eggsCount} Telur`;
+
+      updateFarmUI();
+    }
+
+    // ==================== EKOSISTEM PETERNAKAN AYAM & TELUR CUAN ====================
+    function openChickenFarmModal(defaultTab = 'coop') {
+      const modal = document.getElementById('modal-chicken-farm');
+      if (modal) {
+        modal.classList.remove('hidden');
+        switchFarmTab(defaultTab);
+        updateFarmUI();
+      }
+    }
+
+    function closeChickenFarmModal() {
+      const modal = document.getElementById('modal-chicken-farm');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    function openCoinModal(tab = 'market') {
+      openChickenFarmModal(tab);
+    }
+
+    function switchFarmTab(tabName) {
+      const tabs = ['coop', 'play', 'market', 'bank', 'eco'];
+      tabs.forEach(t => {
+        const content = document.getElementById('farm-content-' + t);
+        const btn = document.getElementById('farm-tab-' + t);
+        if (content) {
+          if (t === tabName) {
+            content.classList.remove('hidden');
+          } else {
+            content.classList.add('hidden');
+          }
+        }
+        if (btn) {
+          if (t === tabName) {
+            btn.className = 'flex-1 min-w-[80px] py-2.5 px-2 text-center text-yellow-400 border-b-2 border-yellow-400 transition-all font-bold flex items-center justify-center gap-1';
+          } else {
+            btn.className = 'flex-1 min-w-[80px] py-2.5 px-2 text-center text-slate-400 hover:text-white transition-all font-semibold flex items-center justify-center gap-1';
+          }
+        }
+      });
+    }
+
+    function updateFarmUI() {
+      const elHens = document.getElementById('farm-hens-count');
+      if (elHens) elHens.innerText = hensCount;
+      const elChicks = document.getElementById('farm-chicks-count');
+      if (elChicks) elChicks.innerText = chicksCount;
+      const elEggs = document.getElementById('farm-eggs-count');
+      if (elEggs) elEggs.innerText = eggsCount;
+      const elFeed = document.getElementById('farm-feed-count');
+      if (elFeed) elFeed.innerText = feedCount;
+      const elDana = document.getElementById('farm-dana-balance');
+      if (elDana) elDana.innerText = `Rp ${Math.round(sawerBalance / 1000)}K`;
+
+      const elCoopHens = document.getElementById('coop-hens-label');
+      if (elCoopHens) elCoopHens.innerText = hensCount;
+      const elNestCount = document.getElementById('coop-nest-count');
+      if (elNestCount) elNestCount.innerText = `${coopNestEggs} Telur Siap Panen`;
+
+      const elPlayChicks = document.getElementById('playground-chicks-label');
+      if (elPlayChicks) elPlayChicks.innerText = chicksCount;
+      const elGrowthPercent = document.getElementById('chick-growth-percent');
+      if (elGrowthPercent) elGrowthPercent.innerText = `${chickGrowthProgress}% Menuju Dewasa`;
+      const elGrowthBar = document.getElementById('chick-growth-bar');
+      if (elGrowthBar) elGrowthBar.style.width = `${Math.min(100, chickGrowthProgress)}%`;
+
+      const elMarketEggs = document.getElementById('market-eggs-avail');
+      if (elMarketEggs) elMarketEggs.innerText = `${eggsCount} Telur Ada`;
+
+      const elBankDana = document.getElementById('farm-bank-dana-number');
+      if (elBankDana && window.userProfile) elBankDana.innerText = window.userProfile.danaNumber || '0812-9876-5432';
+      const elBankBal = document.getElementById('farm-bank-total-balance');
+      if (elBankBal) elBankBal.innerText = `Rp ${sawerBalance.toLocaleString('id-ID')}`;
+    }
+
+    // Action 1: Beri Pakan Ayam (Ayam bertelur seketika)
+    function feedChickens() {
+      if (feedCount < 2) {
+        alert("🌾 Pakan jagung habis atau kurang dari 2 kg! Klaim pakan gratis harian atau beli pakan jagung di tab Pasar Konversi dengan koin.");
+        switchFarmTab('market');
+        return;
+      }
+      feedCount -= 2;
+      const newEggs = hensCount; // Setiap ayam bertelur 1 telur
+      coopNestEggs += newEggs;
+      updateBalances();
+      alert(`🌾 Nyam! Ayam-ayam Anda lahap makan jagung dan langsung menghasilkan +${newEggs} Telur Emas di sarang! Tekan "Panen Telur" untuk mengambilnya.`);
+    }
+
+    // Action 2: Panen Telur Emas ke Gudang
+    function harvestEggs() {
+      if (coopNestEggs <= 0) {
+        alert("🪺 Sarang telur masih kosong! Beri makan ayam terlebih dahulu agar bertelur.");
+        return;
+      }
+      const harvested = coopNestEggs;
+      eggsCount += harvested;
+      coopNestEggs = 0;
+      updateBalances();
+      alert(`🥚 Hore! Anda berhasil memanen +${harvested} Telur Emas ke kantong simpanan! Sekarang Anda bisa menetaskannya jadi Anak Ayam atau menjualnya ke DANA P2P.`);
+    }
+
+    // Action 3: Tetaskan Telur Jadi Anak Ayam (Inkubator)
+    function incubateEggs() {
+      if (eggsCount < 2) {
+        alert("🥚 Butuh minimal 2 Telur Emas untuk dimasukkan ke Inkubator! Panen telur lebih banyak dari ayam Anda.");
+        return;
+      }
+      eggsCount -= 2;
+      chicksCount += 1;
+      updateBalances();
+      alert("🐣 Krek... krek... Telur menetas! 1 Anak Ayam mungil baru telah lahir dan siap dirawat di Taman Bermain! Peternakan Anda semakin besar!");
+      switchFarmTab('play');
+    }
+
+    // Action 4: Rawat & Beri Vitamin Anak Ayam
+    function nurtureChick() {
+      if (coinBalance < 5) {
+        alert("🪙 Koin Anda tidak mencukupi (Butuh 5 Koin untuk vitamin)! Tonton video atau klaim bonus harian.");
+        return;
+      }
+      coinBalance -= 5;
+      chickGrowthProgress = Math.min(100, chickGrowthProgress + 25);
+      updateBalances();
+      if (chickGrowthProgress >= 100) {
+        alert("🍼 Nyam! Anak ayam diberi vitamin super dan tumbuh pesat mencapai 100%! Sekarang tekan 'Dewasakan ke Kandang' agar menjadi Ayam Petelur Dewasa!");
+      } else {
+        alert(`🍼 Anak ayam diberi vitamin bergizi! Pertumbuhan naik ke ${chickGrowthProgress}%.`);
+      }
+    }
+
+    // Action 5: Transformasi Anak Ayam Menjadi Ayam Dewasa
+    function transformChickToHen() {
+      if (chicksCount <= 0) {
+        alert("🐣 Tidak ada anak ayam di taman! Tetaskan telur terlebih dahulu di kandang.");
+        return;
+      }
+      if (chickGrowthProgress < 100) {
+        alert(`🐥 Anak ayam belum cukup dewasa (baru ${chickGrowthProgress}%). Berikan vitamin terlebih dahulu sampai 100%!`);
+        return;
+      }
+      chicksCount -= 1;
+      hensCount += 1;
+      chickGrowthProgress = 20; // reset for next batch
+      updateBalances();
+      alert(`🎉 SELAMAT! 1 Anak ayam telah resmi tumbuh menjadi Ayam Petelur Dewasa! Sekarang peternakan Anda memiliki ${hensCount} ekor ayam petelur. Produksi telur Anda berlipat ganda!`);
+      switchFarmTab('coop');
+    }
+
+    // Action 6: Jual Telur Jadi Saldo Rupiah DANA P2P
+    function sellEggsForDana(amount, rupiahValue) {
+      if (eggsCount < amount) {
+        alert(`🥚 Telur emas tidak cukup (Butuh ${amount} Telur, Anda punya ${eggsCount} Telur)! Beri makan ayam atau rawat anak ayam untuk panen lebih banyak.`);
+        return;
+      }
+      eggsCount -= amount;
+      sawerBalance += rupiahValue;
+      totalCuanRupiahFromEggs += rupiahValue;
+
+      // Catat notifikasi cuan
+      sampleNotifications.unshift({
+        id: 'farm_' + Date.now(),
+        title: 'Penjualan Telur Berhasil!',
+        desc: `Anda menjual ${amount} Telur Emas senilai Rp ${rupiahValue.toLocaleString('id-ID')} ke Saldo DANA P2P.`,
+        sender: 'Pasar Konversi VibeStream',
+        avatar: 'https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?w=100',
+        money: rupiahValue,
+        time: 'Baru saja',
+        read: false,
+        emoji: '🥚'
+      });
+      unreadNotifs++;
+      updateNotificationUI();
+      updateBalances();
+
+      alert(`💰 CUAN MASUK! Berhasil menjual ${amount} Telur Emas! +Rp ${rupiahValue.toLocaleString('id-ID')} langsung ditambahkan ke Saldo DANA P2P Anda tanpa biaya admin. Silakan cek tab Bank DANA!`);
+    }
+
+    // Action 7: Tukar Telur Jadi Koin VibeStream
+    function sellEggsForCoins(amount, coinsGained) {
+      if (eggsCount < amount) {
+        alert(`🥚 Telur emas tidak cukup (Butuh ${amount} Telur)!`);
+        return;
+      }
+      eggsCount -= amount;
+      coinBalance += coinsGained;
+      updateBalances();
+      alert(`🪙 Berhasil menukar ${amount} Telur Emas menjadi +${coinsGained} Koin VibeStream! Sekarang Anda bisa mengirim gift ke kreator favorit.`);
+    }
+
+    // Action 8: Beli Pakan Jagung dengan Koin
+    function buyChickenFeed(feedAmount, coinCost) {
+      if (coinBalance < coinCost) {
+        alert(`🪙 Koin tidak cukup (Butuh ${coinCost} Koin)!`);
+        return;
+      }
+      coinBalance -= coinCost;
+      feedCount += feedAmount;
+      updateBalances();
+      alert(`🌾 Berhasil membeli +${feedAmount} Pakan Jagung Peternak seharga ${coinCost} Koin! Ayam Anda siap bertelur lagi.`);
+    }
+
+    // Action 9: Beli Indukan Ayam Dewasa Tambahan
+    function buyAdultHen(coinCost) {
+      if (coinBalance < coinCost) {
+        alert(`🪙 Koin tidak cukup (Butuh ${coinCost} Koin)!`);
+        return;
+      }
+      coinBalance -= coinCost;
+      hensCount += 1;
+      updateBalances();
+      alert(`🐔 Mantap! Anda berhasil menambah 1 Indukan Ayam Petelur Dewasa ke Kandang! Total ayam Anda kini ${hensCount} ekor.`);
+    }
+
+    // Action 10: Klaim Pakan Gratis Harian
+    let hasClaimedDailyFeed = false;
+    function claimDailyFeedBonus() {
+      if (hasClaimedDailyFeed) {
+        alert("⏰ Anda sudah mengklaim jatah pakan gratis hari ini! Kembali lagi besok atau tonton video shorts untuk mendapatkan pakan tambahan.");
+        return;
+      }
+      hasClaimedDailyFeed = true;
+      feedCount += 10;
+      coinBalance += 25;
+      updateBalances();
+      alert("🎁 Hore! Berhasil klaim jatah harian peternak: +10 Pakan Jagung 🌾 dan +25 Koin VibeStream 🪙! Beri makan ayam Anda sekarang.");
+    }
+
+    // Action 11: Tarik Dana dari Tab Bank Peternakan
+    function handleFarmDanaWithdraw() {
+      closeChickenFarmModal();
+      openWithdrawModal();
     }
 
     function updateNotificationUI() {

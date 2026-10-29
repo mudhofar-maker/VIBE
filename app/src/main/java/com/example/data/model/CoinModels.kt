@@ -12,6 +12,7 @@ data class VibeGift(
 object VibeGiftCatalog {
     val gifts = listOf(
         VibeGift("gift_rose", "Mawar Segar", 5L, "🌹", "Apresiasi manis untuk kreator", 0xFFFF3B5C),
+        VibeGift("gift_golden_egg", "Telur Emas Cuan", 10L, "🥚", "Telur emas peternakan bernilai cuan", 0xFFFFD700),
         VibeGift("gift_coffee", "Kopi Santai", 15L, "☕", "Semangat ngonten kreator", 0xFFD4885A),
         VibeGift("gift_fireworks", "Kembang Api", 50L, "🎆", "Semarakkan video pilihanmu", 0xFFFF8A00),
         VibeGift("gift_heart_gem", "Hati Berlian", 100L, "💖", "Dukungan penuh cinta", 0xFFFF458A),
@@ -136,4 +137,14 @@ data class FanInteractionReport(
     val formattedTotalRupiah: String
         get() = FanInteractionEconomics.formatRupiah(totalRupiahValue)
 }
+
+data class ChickenFarmState(
+    val hensCount: Int = 2,
+    val chicksCount: Int = 3,
+    val eggsCount: Int = 12,
+    val nestEggsCount: Int = 2,
+    val feedKg: Int = 25,
+    val chickGrowthPercent: Int = 60,
+    val totalCuanRupiah: Double = 60_000.0
+)
 
