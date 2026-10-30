@@ -223,6 +223,8 @@
           <video id="shorts-video" class="w-full h-full object-cover" loop playsinline autoplay muted>
             <source src="https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4" type="video/mp4" />
           </video>
+          <!-- Background Music Audio Player for Shorts -->
+          <audio id="shorts-bgm-audio" loop playsinline preload="auto"></audio>
           
           <!-- Top & Bottom Lighting Gradients -->
           <div class="absolute inset-0 bg-gradient-to-b from-black/75 via-transparent via-50% to-black/90 pointer-events-none"></div>
@@ -322,8 +324,8 @@
               
               <!-- Running Music Track Ticker -->
               <div class="flex items-center gap-2 text-[11px] text-slate-200 bg-black/40 backdrop-blur-md px-2.5 py-1 rounded-full border border-white/10 w-fit max-w-full overflow-hidden">
-                <span class="text-tiktokCyan">🎵</span>
-                <span class="truncate font-medium">DJ Tabrak Masuk - Remix Nusantara</span>
+                <span class="text-tiktokCyan animate-spin" style="animation-duration: 4s;">💿</span>
+                <span id="shorts-music-title" class="truncate font-medium">DJ Tabrak Masuk - Viral Remix 2026</span>
               </div>
             </div>
 
@@ -1599,11 +1601,23 @@
           </button>
         </div>
 
-        <!-- 2. Tambah Musik Selector -->
-        <div class="p-3 bg-darkSurface/60 rounded-xl border border-darkBorder space-y-2">
-          <label class="text-xs font-bold text-slate-300 flex items-center gap-1.5">
-            <span>🎵</span> Pilihan Musik Viral:
-          </label>
+        <!-- 2. Tambah Musik Selector & Audio Studio Mixer -->
+        <div class="p-3 bg-darkSurface/60 rounded-xl border border-darkBorder space-y-2.5">
+          <div class="flex items-center justify-between">
+            <label class="text-xs font-bold text-slate-300 flex items-center gap-1.5">
+              <span>🎵</span> Integrasi Musik & Audio Latar:
+            </label>
+            <span id="creator-music-badge" class="text-[10px] px-2 py-0.5 rounded-full bg-tiktokCyan/20 text-tiktokCyan font-bold">
+              Terintegrasi
+            </span>
+          </div>
+
+          <!-- Audio Element for Creator Preview -->
+          <audio id="creator-preview-audio" loop playsinline preload="auto"></audio>
+          <!-- Hidden Audio Picker from Phone Storage -->
+          <input type="file" id="creator-audio-picker" accept="audio/*" class="hidden" onchange="handleCustomAudioPick(event)" />
+
+          <!-- Track Dropdown -->
           <select id="creator-music-select" class="w-full bg-darkBg border border-darkBorder rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-tiktokCyan" onchange="updateCreatorMusic()">
             <option value="DJ Tabrak Masuk - Viral Remix 2026">DJ Tabrak Masuk - Viral Remix 2026 (0:30)</option>
             <option value="Dangdut Koplo Jedag Jedug Full Bass">Dangdut Koplo Jedag Jedug Full Bass (0:45)</option>
@@ -1611,6 +1625,31 @@
             <option value="Epic Gaming Synth Beat">Epic Gaming Synth Beat (0:35)</option>
             <option value="Pop Nusantara Romantis">Pop Nusantara Romantis (0:42)</option>
           </select>
+
+          <!-- Audio Controls: Play/Stop Preview & Pick Custom Audio from Device -->
+          <div class="grid grid-cols-2 gap-2 pt-0.5">
+            <button type="button" id="btn-preview-music" onclick="toggleMusicPreview()" class="py-2 px-2.5 bg-darkBg hover:bg-slate-800 border border-tiktokCyan/50 text-tiktokCyan rounded-lg text-[11px] font-bold flex items-center justify-center gap-1.5 transition-all active:scale-95">
+              <span id="preview-music-icon">▶️</span> <span id="preview-music-label">Tes Dengar Musik</span>
+            </button>
+            <button type="button" onclick="triggerCustomAudioPick()" class="py-2 px-2.5 bg-darkBg hover:bg-slate-800 border border-yellow-500/50 text-yellow-300 rounded-lg text-[11px] font-bold flex items-center justify-center gap-1.5 transition-all active:scale-95">
+              <span>📂</span> <span>Musik dari HP</span>
+            </button>
+          </div>
+
+          <!-- Volume Mixers (Musik Latar vs Suara Asli Video) -->
+          <div class="pt-1.5 space-y-2 border-t border-darkBorder/60">
+            <div class="flex items-center justify-between text-[11px]">
+              <span class="text-slate-400 font-medium flex items-center gap-1">🎵 Volume Musik Latar:</span>
+              <span id="music-vol-label" class="font-bold text-tiktokCyan">85%</span>
+            </div>
+            <input type="range" id="creator-music-vol" min="0" max="100" value="85" class="w-full accent-tiktokCyan h-1.5 bg-darkBg rounded-lg cursor-pointer" oninput="adjustMusicVolume(this.value)">
+
+            <div class="flex items-center justify-between text-[11px] pt-1">
+              <span class="text-slate-400 font-medium flex items-center gap-1">📹 Volume Suara Video:</span>
+              <span id="video-vol-label" class="font-bold text-slate-200">100%</span>
+            </div>
+            <input type="range" id="creator-video-vol" min="0" max="100" value="100" class="w-full accent-tiktokRed h-1.5 bg-darkBg rounded-lg cursor-pointer" oninput="adjustVideoVolume(this.value)">
+          </div>
         </div>
 
         <!-- 3. Tambah Text Font Full Color (Bisa Di-Cubit / Zoom) -->
@@ -1861,11 +1900,22 @@
       });
     }
 
-    // Video Sound Toggle
+    // Video Sound & Background Music Toggle
     function toggleVideoSound() {
       const vid = document.getElementById('shorts-video');
+      const bgm = document.getElementById('shorts-bgm-audio');
       const icon = document.getElementById('sound-icon');
+      if (!vid) return;
+
       vid.muted = !vid.muted;
+      if (bgm) {
+        bgm.muted = vid.muted;
+        if (!vid.muted && !vid.paused) {
+          bgm.play().catch(() => playWebAudioSynthForActiveTrack());
+        } else if (vid.muted) {
+          stopWebAudioSynth();
+        }
+      }
       icon.innerText = vid.muted ? '🔇' : '🔊';
     }
 
@@ -1913,11 +1963,15 @@
 
     function toggleVideoPlayPause() {
       const vid = document.getElementById('shorts-video');
+      const bgm = document.getElementById('shorts-bgm-audio');
       const indicator = document.getElementById('video-play-indicator');
       if (!vid) return;
 
       if (vid.paused) {
         vid.play().catch(() => {});
+        if (bgm && !vid.muted) {
+          bgm.play().catch(() => playWebAudioSynthForActiveTrack());
+        }
         if (indicator) {
           indicator.innerHTML = '<div class="w-16 h-16 rounded-full bg-black/60 backdrop-blur-md flex items-center justify-center text-white text-3xl shadow-2xl">▶️</div>';
           indicator.classList.remove('opacity-0');
@@ -1925,6 +1979,8 @@
         }
       } else {
         vid.pause();
+        if (bgm) bgm.pause();
+        stopWebAudioSynth();
         if (indicator) {
           indicator.innerHTML = '<div class="w-16 h-16 rounded-full bg-black/60 backdrop-blur-md flex items-center justify-center text-white text-3xl shadow-2xl">⏸️</div>';
           indicator.classList.remove('opacity-0');
@@ -3049,29 +3105,372 @@
       el.className = `px-3.5 py-1.5 rounded-xl text-base transition-transform select-none shadow-xl cursor-pointer ${classes}`;
     }
 
-    function updateCreatorMusic() {
-      const sel = document.getElementById('creator-music-select').value;
-      alert(`🎵 Musik "${sel}" berhasil diterapkan ke video!`);
+    // ==================== AUDIO & MUSIC INTEGRATION ENGINE ====================
+    const MUSIC_TRACKS = {
+      "DJ Tabrak Masuk - Viral Remix 2026": {
+        title: "DJ Tabrak Masuk - Viral Remix 2026",
+        url: "https://commondatastorage.googleapis.com/codeskulptor-demos/DDR_assets/Kangaroo_MusiQue_-_The_Neverwritten_Role_Playing_Game.mp3",
+        genre: "remix"
+      },
+      "Dangdut Koplo Jedag Jedug Full Bass": {
+        title: "Dangdut Koplo Jedag Jedug Full Bass",
+        url: "https://commondatastorage.googleapis.com/codeskulptor-demos/riceracer_assets/music/race.ogg",
+        genre: "koplo"
+      },
+      "Aesthetic Sunset Acoustic Vibes": {
+        title: "Aesthetic Sunset Acoustic Vibes",
+        url: "https://commondatastorage.googleapis.com/codeskulptor-demos/riceracer_assets/music/win.ogg",
+        genre: "acoustic"
+      },
+      "Epic Gaming Synth Beat": {
+        title: "Epic Gaming Synth Beat",
+        url: "https://commondatastorage.googleapis.com/codeskulptor-assets/Epoq-Lepidoptera.ogg",
+        genre: "synth"
+      },
+      "Pop Nusantara Romantis": {
+        title: "Pop Nusantara Romantis",
+        url: "https://commondatastorage.googleapis.com/codeskulptor-demos/riceracer_assets/music/start.ogg",
+        genre: "pop"
+      }
+    };
+
+    let activeMusicTitle = "DJ Tabrak Masuk - Viral Remix 2026";
+    let activeMusicUrl = MUSIC_TRACKS["DJ Tabrak Masuk - Viral Remix 2026"].url;
+    let customUploadedAudioUrl = null;
+    let customUploadedAudioName = "";
+    let isMusicPreviewPlaying = false;
+    let musicVolumeLevel = 0.85;
+    let videoVolumeLevel = 1.0;
+    let synthAudioCtx = null;
+    let synthTimer = null;
+
+    // Web Audio Procedural Synthesizer for instant fail-safe music playback
+    function getAudioContext() {
+      if (!synthAudioCtx) {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (AudioContextClass) {
+          synthAudioCtx = new AudioContextClass();
+        }
+      }
+      if (synthAudioCtx && synthAudioCtx.state === 'suspended') {
+        synthAudioCtx.resume();
+      }
+      return synthAudioCtx;
+    }
+
+    function playWebAudioSynthForActiveTrack() {
+      stopWebAudioSynth();
+      const ctx = getAudioContext();
+      if (!ctx) return;
+
+      const track = MUSIC_TRACKS[activeMusicTitle] || { genre: 'remix' };
+      const tempo = track.genre === 'koplo' ? 140 : (track.genre === 'acoustic' ? 95 : 128);
+      const stepDuration = 60 / tempo / 2; // 16th notes
+      let step = 0;
+
+      const bassNotes = track.genre === 'koplo' ? [110, 110, 164.8, 146.8] : (track.genre === 'acoustic' ? [130.8, 164.8, 196.0, 220.0] : [82.4, 82.4, 98.0, 110.0]);
+      const leadNotes = [329.6, 392.0, 440.0, 523.25, 440.0, 392.0];
+
+      synthTimer = setInterval(() => {
+        try {
+          const t = ctx.currentTime;
+          // Kick Drum on quarter beats
+          if (step % 4 === 0) {
+            const kickOsc = ctx.createOscillator();
+            const kickGain = ctx.createGain();
+            kickOsc.frequency.setValueAtTime(140, t);
+            kickOsc.frequency.exponentialRampToValueAtTime(0.01, t + 0.22);
+            kickGain.gain.setValueAtTime(0.6 * musicVolumeLevel, t);
+            kickGain.gain.exponentialRampToValueAtTime(0.01, t + 0.22);
+            kickOsc.connect(kickGain);
+            kickGain.connect(ctx.destination);
+            kickOsc.start(t);
+            kickOsc.stop(t + 0.25);
+          }
+
+          // Snare / Clap on beats 2 & 4
+          if (step % 8 === 4) {
+            const snareNoise = ctx.createOscillator();
+            const snareGain = ctx.createGain();
+            snareNoise.type = 'triangle';
+            snareNoise.frequency.setValueAtTime(220, t);
+            snareGain.gain.setValueAtTime(0.3 * musicVolumeLevel, t);
+            snareGain.gain.exponentialRampToValueAtTime(0.01, t + 0.15);
+            snareNoise.connect(snareGain);
+            snareGain.connect(ctx.destination);
+            snareNoise.start(t);
+            snareNoise.stop(t + 0.16);
+          }
+
+          // Bass Note
+          const bassNote = bassNotes[Math.floor((step / 4) % bassNotes.length)];
+          const bassOsc = ctx.createOscillator();
+          const bassGain = ctx.createGain();
+          bassOsc.type = 'sawtooth';
+          bassOsc.frequency.setValueAtTime(bassNote, t);
+          bassGain.gain.setValueAtTime(0.25 * musicVolumeLevel, t);
+          bassGain.gain.exponentialRampToValueAtTime(0.01, t + 0.2);
+          bassOsc.connect(bassGain);
+          bassGain.connect(ctx.destination);
+          bassOsc.start(t);
+          bassOsc.stop(t + 0.2);
+
+          // Lead Melody Arp
+          if (step % 2 === 0) {
+            const leadNote = leadNotes[step % leadNotes.length];
+            const leadOsc = ctx.createOscillator();
+            const leadGain = ctx.createGain();
+            leadOsc.type = 'sine';
+            leadOsc.frequency.setValueAtTime(leadNote, t);
+            leadGain.gain.setValueAtTime(0.18 * musicVolumeLevel, t);
+            leadGain.gain.exponentialRampToValueAtTime(0.01, t + 0.18);
+            leadOsc.connect(leadGain);
+            leadGain.connect(ctx.destination);
+            leadOsc.start(t);
+            leadOsc.stop(t + 0.19);
+          }
+
+          step++;
+        } catch (e) {
+          // Ignore
+        }
+      }, stepDuration * 1000);
+    }
+
+    function stopWebAudioSynth() {
+      if (synthTimer) {
+        clearInterval(synthTimer);
+        synthTimer = null;
+      }
+    }
+
+    function adjustMusicVolume(val) {
+      musicVolumeLevel = val / 100;
+      const lbl = document.getElementById('music-vol-label');
+      if (lbl) lbl.innerText = `${val}%`;
+
+      const previewAudio = document.getElementById('creator-preview-audio');
+      if (previewAudio) previewAudio.volume = musicVolumeLevel;
+
+      const bgm = document.getElementById('shorts-bgm-audio');
+      if (bgm) bgm.volume = musicVolumeLevel;
+    }
+
+    function adjustVideoVolume(val) {
+      videoVolumeLevel = val / 100;
+      const lbl = document.getElementById('video-vol-label');
+      if (lbl) lbl.innerText = `${val}%`;
+
+      const creatorSample = document.getElementById('creator-sample-video');
+      if (creatorSample) creatorSample.volume = videoVolumeLevel;
+
+      const shortsVid = document.getElementById('shorts-video');
+      if (shortsVid) shortsVid.volume = videoVolumeLevel;
+    }
+
+    function triggerCustomAudioPick() {
+      const picker = document.getElementById('creator-audio-picker');
+      if (picker) {
+        picker.value = '';
+        picker.click();
+      }
+    }
+
+    function handleCustomAudioPick(e) {
+      const file = e.target.files && e.target.files[0];
+      if (file) {
+        customUploadedAudioUrl = URL.createObjectURL(file);
+        customUploadedAudioName = file.name;
+        activeMusicTitle = `Musik HP: ${file.name}`;
+        activeMusicUrl = customUploadedAudioUrl;
+
+        // Add or select custom option in select
+        const sel = document.getElementById('creator-music-select');
+        let opt = sel.querySelector('option[data-custom="true"]');
+        if (!opt) {
+          opt = document.createElement('option');
+          opt.setAttribute('data-custom', 'true');
+          sel.prepend(opt);
+        }
+        opt.value = activeMusicTitle;
+        opt.innerText = `🎵 ${file.name} (Musik dari HP)`;
+        sel.value = activeMusicTitle;
+
+        updateCreatorMusic(true);
+        alert(`📂 Musik kustom "${file.name}" dari HP berhasil dimuat dan terintegrasi!`);
+      }
+    }
+
+    function updateCreatorMusic(skipAlert = false) {
+      const sel = document.getElementById('creator-music-select');
+      const val = sel.value;
+
+      if (val === activeMusicTitle && customUploadedAudioUrl) {
+        activeMusicUrl = customUploadedAudioUrl;
+      } else if (MUSIC_TRACKS[val]) {
+        activeMusicTitle = val;
+        activeMusicUrl = MUSIC_TRACKS[val].url;
+      } else {
+        activeMusicTitle = val;
+      }
+
+      // Update Preview Audio
+      const previewAudio = document.getElementById('creator-preview-audio');
+      if (previewAudio) {
+        previewAudio.src = activeMusicUrl;
+        previewAudio.volume = musicVolumeLevel;
+        if (isMusicPreviewPlaying) {
+          previewAudio.play().catch(() => playWebAudioSynthForActiveTrack());
+        }
+      }
+
+      const badge = document.getElementById('creator-music-badge');
+      if (badge) badge.innerText = "Terpasang ✅";
+
+      if (!skipAlert) {
+        startBriefMusicPreview();
+      }
+    }
+
+    function toggleMusicPreview() {
+      const previewAudio = document.getElementById('creator-preview-audio');
+      const icon = document.getElementById('preview-music-icon');
+      const label = document.getElementById('preview-music-label');
+      const sampleVid = document.getElementById('creator-sample-video');
+
+      if (!isMusicPreviewPlaying) {
+        isMusicPreviewPlaying = true;
+        if (icon) icon.innerText = '⏸️';
+        if (label) label.innerText = 'Hentikan Preview';
+
+        if (sampleVid) {
+          sampleVid.currentTime = 0;
+          sampleVid.play().catch(() => {});
+        }
+
+        if (previewAudio) {
+          if (!previewAudio.src || previewAudio.src === window.location.href) {
+            previewAudio.src = activeMusicUrl;
+          }
+          previewAudio.volume = musicVolumeLevel;
+          previewAudio.play().catch(() => {
+            playWebAudioSynthForActiveTrack();
+          });
+        }
+      } else {
+        isMusicPreviewPlaying = false;
+        if (icon) icon.innerText = '▶️';
+        if (label) label.innerText = 'Tes Dengar Musik';
+        if (previewAudio) previewAudio.pause();
+        stopWebAudioSynth();
+      }
+    }
+
+    function startBriefMusicPreview() {
+      const previewAudio = document.getElementById('creator-preview-audio');
+      const icon = document.getElementById('preview-music-icon');
+      const label = document.getElementById('preview-music-label');
+      if (!previewAudio) return;
+
+      previewAudio.src = activeMusicUrl;
+      previewAudio.volume = musicVolumeLevel;
+      isMusicPreviewPlaying = true;
+      if (icon) icon.innerText = '⏸️';
+      if (label) label.innerText = 'Memutar Musik...';
+
+      previewAudio.play().catch(() => {
+        playWebAudioSynthForActiveTrack();
+      });
     }
 
     function publishCreatorVideo() {
       const caption = document.getElementById('creator-text-input').value.trim() || 'VibeStream Viral 2026 ✨';
       const music = document.getElementById('creator-music-select').value;
+      activeMusicTitle = music;
 
-      if (activeVideoSourceUrl) {
-        const shortsVid = document.getElementById('shorts-video');
+      // Stop Preview audio
+      const previewAudio = document.getElementById('creator-preview-audio');
+      if (previewAudio) previewAudio.pause();
+      isMusicPreviewPlaying = false;
+      stopWebAudioSynth();
+
+      // 1. Setup Shorts Video
+      const shortsVid = document.getElementById('shorts-video');
+      if (activeVideoSourceUrl && shortsVid) {
         shortsVid.src = activeVideoSourceUrl;
-        shortsVid.play().catch(e => console.log(e));
+        shortsVid.volume = videoVolumeLevel;
       }
-      document.getElementById('shorts-caption').innerText = `${caption} 🎵 ${music}`;
-      document.getElementById('shorts-creator-name').innerText = '@saya (Kreator)';
+
+      // 2. Setup Background Music Audio
+      const bgmAudio = document.getElementById('shorts-bgm-audio');
+      if (bgmAudio) {
+        bgmAudio.src = activeMusicUrl;
+        bgmAudio.volume = musicVolumeLevel;
+        bgmAudio.muted = false;
+      }
+
+      // 3. Update Text and Ticker in UI Layer 2
+      const musicTickerTitle = document.getElementById('shorts-music-title');
+      if (musicTickerTitle) {
+        musicTickerTitle.innerText = activeMusicTitle;
+      }
+
+      const captionEl = document.getElementById('shorts-caption');
+      if (captionEl) {
+        captionEl.innerText = `${caption}`;
+      }
+
+      const creatorNameEl = document.getElementById('shorts-creator-name');
+      if (creatorNameEl) {
+        creatorNameEl.innerText = '@saya (Kreator)';
+      }
+
+      // Unmute video & play together with music
+      if (shortsVid) {
+        shortsVid.muted = false;
+        shortsVid.currentTime = 0;
+        shortsVid.play().catch(() => {});
+      }
+      if (bgmAudio) {
+        bgmAudio.currentTime = 0;
+        bgmAudio.play().catch(() => {
+          playWebAudioSynthForActiveTrack();
+        });
+      }
+
+      const soundIcon = document.getElementById('sound-icon');
+      if (soundIcon) soundIcon.innerText = '🔊';
 
       closeCreateVideoModal();
       switchView('feed');
       setFeedFormat('shorts');
-      selectBottomNav('nav-shorts');
+      selectBottomNav('nav-home');
       window.scrollTo({ top: 0, behavior: 'smooth' });
-      alert(`🎉 Video baru berhasil dipublikasikan dari ${activeVideoSourceName} ke Feed VibeStream! Selamat berkarya!`);
+
+      // If mine.py FastAPI backend is running, sync post
+      syncUploadToFastApi(caption, activeMusicTitle);
+
+      alert(`🎉 SUKSES! Video baru dan musik "${activeMusicTitle}" berhasil di-integrasikan dan diputar di Feed Shorts VibeStream!`);
+    }
+
+    async function syncUploadToFastApi(caption, music) {
+      try {
+        const formData = new FormData();
+        formData.append('username', '@saya');
+        formData.append('caption', caption);
+        formData.append('music', music);
+        
+        // Dummy/Blob video if created
+        const blob = new Blob(["video data"], { type: 'video/mp4' });
+        formData.append('file', blob, 'video_upload.mp4');
+
+        await fetch('/api/upload', {
+          method: 'POST',
+          body: formData
+        });
+      } catch (e) {
+        // Graceful ignore
+      }
     }
 
     function selectBottomNav(tab) {

@@ -35,7 +35,8 @@ def read_root():
 async def upload_video(
     file: UploadFile = File(...),
     username: str = Form(...),
-    caption: str = Form(...)
+    caption: str = Form(...),
+    music: str = Form("DJ Tabrak Masuk - Viral Remix 2026")
 ):
     try:
         # Buat nama file unik berdasarkan waktu
@@ -55,6 +56,7 @@ async def upload_video(
             "id": len(feed_database) + 1,
             "username": username,
             "caption": caption,
+            "music": music,
             "video_url": video_url,
             "created_at": datetime.now().isoformat()
         }

@@ -736,9 +736,9 @@ fun CreateScreen(
                 activeEffectName = currentEffect.name,
                 initialCaption = captionDefault,
                 onDismiss = { showPublishDialog = false },
-                onPublish = { caption, tags, category, isLong, duration ->
+                onPublish = { caption, tags, sound, category, isLong, duration ->
                     showPublishDialog = false
-                    onPublishVideo(caption, tags, selectedSound, category, isLong, duration)
+                    onPublishVideo(caption, tags, sound, category, isLong, duration)
                 }
             )
         }
@@ -801,9 +801,10 @@ private fun PublishVideoDialog(
     activeEffectName: String = "Tanpa Efek",
     initialCaption: String = "Video keren terbaru saya! Yuk tonton sampai habis ✨ #fyp #tokvid",
     onDismiss: () -> Unit,
-    onPublish: (caption: String, tags: String, category: String, isLongVideo: Boolean, durationFormatted: String) -> Unit
+    onPublish: (caption: String, tags: String, sound: String, category: String, isLongVideo: Boolean, durationFormatted: String) -> Unit
 ) {
     var caption by remember { mutableStateOf(initialCaption) }
+    var soundTitle by remember { mutableStateOf(if (defaultSound.isNotBlank()) defaultSound else "DJ Tabrak Masuk - Remix Nusantara") }
     var tags by remember { mutableStateOf("#fyp #viral #indonesia #kreator") }
     var selectedCategory by remember { mutableStateOf("Tari & Musik") }
     var isLongVideo by remember { mutableStateOf(false) }
@@ -958,6 +959,31 @@ private fun PublishVideoDialog(
 
                 Spacer(modifier = Modifier.height(12.dp))
 
+                Text("Musik / Audio Latar", color = TextSecondary, fontSize = 12.sp)
+                Spacer(modifier = Modifier.height(4.dp))
+                OutlinedTextField(
+                    value = soundTitle,
+                    onValueChange = { soundTitle = it },
+                    leadingIcon = {
+                        Icon(imageVector = Icons.Default.MusicNote, contentDescription = null, tint = TikTokCyan)
+                    },
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedContainerColor = DarkSurfaceElevated,
+                        unfocusedContainerColor = DarkSurfaceElevated,
+                        focusedBorderColor = TikTokCyan,
+                        unfocusedBorderColor = DarkBorder,
+                        focusedTextColor = TextPrimary,
+                        unfocusedTextColor = TextPrimary
+                    ),
+                    shape = RoundedCornerShape(12.dp),
+                    singleLine = true,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .testTag("publish_sound_title_input")
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
                 Text("Kategori", color = TextSecondary, fontSize = 12.sp)
                 Spacer(modifier = Modifier.height(4.dp))
                 LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -985,7 +1011,7 @@ private fun PublishVideoDialog(
                 Button(
                     onClick = {
                         val duration = if (isLongVideo) durationFormatted else "0:45"
-                        onPublish(caption, tags, selectedCategory, isLongVideo, duration)
+                        onPublish(caption, tags, soundTitle.trim(), selectedCategory, isLongVideo, duration)
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = TikTokRed),
                     shape = RoundedCornerShape(12.dp),
