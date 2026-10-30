@@ -237,7 +237,7 @@ fun TokVidApp(viewModel: MainViewModel) {
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(bottom = 60.dp)
+                        .padding(bottom = 76.dp)
                 ) {
                     ExploreScreen(
                         videos = allVideos,
@@ -271,7 +271,7 @@ fun TokVidApp(viewModel: MainViewModel) {
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(bottom = 60.dp)
+                        .padding(bottom = 76.dp)
                 ) {
                     InboxScreen(notifications = viewModel.notifications)
                 }
@@ -281,7 +281,7 @@ fun TokVidApp(viewModel: MainViewModel) {
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(bottom = 60.dp)
+                        .padding(bottom = 76.dp)
                 ) {
                     ProfileScreen(
                         videos = allVideos,
